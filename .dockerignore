@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+temp_images/
+stored_images/
+.encodings_cache.pkl
+*.log
+.env

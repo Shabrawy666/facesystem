@@ -1,0 +1,453 @@
+2025-06-13 07:05:22,975 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:10:32,221 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:13:24,852 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:15:24,145 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:17:07,274 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:18:34,416 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:21:09,527 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:22:56,534 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:27:11,786 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:31:10,471 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:33:02,645 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:35:42,276 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:37:03,110 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:43:53,981 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:49:13,491 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 07:57:44,921 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:02:15,329 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:05:28,612 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:12:11,058 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:12:29,273 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:12:49,683 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:17:30,675 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:17:46,412 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:18:13,432 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:21:59,004 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:24:53,088 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:25:10,937 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:27:23,123 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:48:21,262 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:48:27,093 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 08:48:27,094 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 08:48:27,097 - INFO -  * Restarting with stat
+2025-06-13 08:48:29,809 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:48:35,763 - WARNING -  * Debugger is active!
+2025-06-13 08:48:35,772 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 08:48:39,710 - INFO - 127.0.0.1 - - [13/Jun/2025 08:48:39] "[33mGET / HTTP/1.1[0m" 404 -
+2025-06-13 08:48:40,305 - INFO - 127.0.0.1 - - [13/Jun/2025 08:48:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-06-13 08:50:33,658 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:50:38,669 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 08:50:38,670 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 08:50:38,672 - INFO -  * Restarting with stat
+2025-06-13 08:50:41,333 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:50:46,529 - WARNING -  * Debugger is active!
+2025-06-13 08:50:46,540 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 08:51:29,291 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\run.py', reloading
+2025-06-13 08:51:52,644 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:51:57,645 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 08:51:57,645 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 08:51:57,648 - INFO -  * Restarting with stat
+2025-06-13 08:52:00,272 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:52:05,238 - WARNING -  * Debugger is active!
+2025-06-13 08:52:05,250 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 08:53:23,771 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\__init__.py', reloading
+2025-06-13 08:53:25,323 - INFO -  * Restarting with stat
+2025-06-13 08:53:27,911 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:53:32,756 - WARNING -  * Debugger is active!
+2025-06-13 08:53:32,766 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 08:53:56,602 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\__init__.py', reloading
+2025-06-13 08:53:58,388 - INFO -  * Restarting with stat
+2025-06-13 08:54:01,219 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:54:14,189 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:54:19,457 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 08:54:19,457 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 08:54:19,460 - INFO -  * Restarting with stat
+2025-06-13 08:54:22,125 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 08:54:27,200 - WARNING -  * Debugger is active!
+2025-06-13 08:54:27,210 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 08:54:28,100 - INFO - 127.0.0.1 - - [13/Jun/2025 08:54:28] "GET / HTTP/1.1" 200 -
+2025-06-13 08:57:39,747 - INFO - 127.0.0.1 - - [13/Jun/2025 08:57:39] "[31m[1mPOST /login/student HTTP/1.1[0m" 401 -
+2025-06-13 08:59:50,238 - INFO - 127.0.0.1 - - [13/Jun/2025 08:59:50] "[35m[1mPOST /login/student HTTP/1.1[0m" 500 -
+2025-06-13 09:01:40,993 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\models.py', reloading
+2025-06-13 09:01:42,706 - INFO -  * Restarting with stat
+2025-06-13 09:01:45,438 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:01:50,871 - WARNING -  * Debugger is active!
+2025-06-13 09:01:50,880 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:02:20,834 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\models.py', reloading
+2025-06-13 09:02:22,457 - INFO -  * Restarting with stat
+2025-06-13 09:02:25,193 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:02:38,750 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:02:44,154 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 09:02:44,154 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 09:02:44,156 - INFO -  * Restarting with stat
+2025-06-13 09:02:46,785 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:02:51,896 - WARNING -  * Debugger is active!
+2025-06-13 09:02:51,906 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:02:52,802 - INFO - 127.0.0.1 - - [13/Jun/2025 09:02:52] "GET / HTTP/1.1" 200 -
+2025-06-13 09:02:57,459 - INFO - 127.0.0.1 - - [13/Jun/2025 09:02:57] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 09:05:09,391 - INFO - 127.0.0.1 - - [13/Jun/2025 09:05:09] "[35m[1mPOST /login/teacher HTTP/1.1[0m" 500 -
+2025-06-13 09:07:22,280 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\auth_routes.py', reloading
+2025-06-13 09:07:24,260 - INFO -  * Restarting with stat
+2025-06-13 09:07:26,957 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:11:09,096 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:11:14,896 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 09:11:14,897 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 09:11:14,901 - INFO -  * Restarting with stat
+2025-06-13 09:11:17,587 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:11:22,130 - WARNING -  * Debugger is active!
+2025-06-13 09:11:22,140 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:11:23,424 - INFO - 127.0.0.1 - - [13/Jun/2025 09:11:23] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-13 09:12:13,647 - INFO - 127.0.0.1 - - [13/Jun/2025 09:12:13] "[31m[1mPOST /teacher/courses HTTP/1.1[0m" 405 -
+2025-06-13 09:12:17,824 - INFO - 127.0.0.1 - - [13/Jun/2025 09:12:17] "[31m[1mGET /teacher/courses HTTP/1.1[0m" 422 -
+2025-06-13 09:15:18,670 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\auth_routes.py', reloading
+2025-06-13 09:15:20,473 - INFO -  * Restarting with stat
+2025-06-13 09:15:24,421 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:15:31,197 - WARNING -  * Debugger is active!
+2025-06-13 09:15:31,205 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:18:04,594 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\teacher_routes.py', reloading
+2025-06-13 09:18:06,729 - INFO -  * Restarting with stat
+2025-06-13 09:18:11,140 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:18:17,481 - WARNING -  * Debugger is active!
+2025-06-13 09:18:17,502 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:18:50,918 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\teacher_routes.py', reloading
+2025-06-13 09:18:52,557 - INFO -  * Restarting with stat
+2025-06-13 09:18:55,223 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:19:00,344 - WARNING -  * Debugger is active!
+2025-06-13 09:19:00,364 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:19:24,341 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\teacher_routes.py', reloading
+2025-06-13 09:19:26,015 - INFO -  * Restarting with stat
+2025-06-13 09:19:28,752 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:19:34,051 - WARNING -  * Debugger is active!
+2025-06-13 09:19:34,062 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:27:13,282 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:27:18,503 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 09:27:18,503 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 09:27:18,506 - INFO -  * Restarting with stat
+2025-06-13 09:27:21,223 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:27:26,573 - WARNING -  * Debugger is active!
+2025-06-13 09:27:26,585 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:27:27,920 - INFO - 127.0.0.1 - - [13/Jun/2025 09:27:27] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-13 09:28:01,977 - INFO - 127.0.0.1 - - [13/Jun/2025 09:28:01] "GET /teacher/courses HTTP/1.1" 200 -
+2025-06-13 09:32:48,474 - INFO - 127.0.0.1 - - [13/Jun/2025 09:32:48] "GET /teacher/courses/2/sessions HTTP/1.1" 200 -
+2025-06-13 09:33:07,471 - INFO - 127.0.0.1 - - [13/Jun/2025 09:33:07] "[31m[1mGET /teacher/courses/2/sessions/start HTTP/1.1[0m" 405 -
+2025-06-13 09:33:13,545 - INFO - 127.0.0.1 - - [13/Jun/2025 09:33:13] "POST /teacher/courses/2/sessions/start HTTP/1.1" 200 -
+2025-06-13 09:33:39,838 - INFO - 127.0.0.1 - - [13/Jun/2025 09:33:39] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 09:34:08,191 - INFO - 127.0.0.1 - - [13/Jun/2025 09:34:08] "GET /teacher/sessions/1/attendance HTTP/1.1" 200 -
+2025-06-13 09:34:37,032 - INFO - 127.0.0.1 - - [13/Jun/2025 09:34:37] "GET /teacher/sessions/1/attendance HTTP/1.1" 200 -
+2025-06-13 09:35:05,797 - INFO - 127.0.0.1 - - [13/Jun/2025 09:35:05] "[31m[1mPUT /teacher/sessions/1/attendance HTTP/1.1[0m" 400 -
+2025-06-13 09:35:57,924 - INFO - 127.0.0.1 - - [13/Jun/2025 09:35:57] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 09:36:26,905 - INFO - 127.0.0.1 - - [13/Jun/2025 09:36:26] "[35m[1mGET /student/courses HTTP/1.1[0m" 500 -
+2025-06-13 09:41:12,671 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
+2025-06-13 09:41:14,425 - INFO -  * Restarting with stat
+2025-06-13 09:41:17,144 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:41:22,642 - WARNING -  * Debugger is active!
+2025-06-13 09:41:22,653 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:42:44,811 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\ml_backend.py', reloading
+2025-06-13 09:42:46,498 - INFO -  * Restarting with stat
+2025-06-13 09:42:49,161 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:42:54,249 - WARNING -  * Debugger is active!
+2025-06-13 09:42:54,260 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:43:01,211 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
+2025-06-13 09:43:02,937 - INFO -  * Restarting with stat
+2025-06-13 09:43:05,584 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:44:39,322 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:44:44,285 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 09:44:44,285 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 09:44:44,289 - INFO -  * Restarting with stat
+2025-06-13 09:44:47,045 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:44:52,425 - WARNING -  * Debugger is active!
+2025-06-13 09:44:52,437 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:44:53,917 - INFO - 127.0.0.1 - - [13/Jun/2025 09:44:53] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 09:45:42,657 - INFO - 127.0.0.1 - - [13/Jun/2025 09:45:42] "GET /student/courses HTTP/1.1" 200 -
+2025-06-13 09:45:54,190 - INFO - 127.0.0.1 - - [13/Jun/2025 09:45:54] "GET /student/open_sessions HTTP/1.1" 200 -
+2025-06-13 09:46:47,480 - INFO - 127.0.0.1 - - [13/Jun/2025 09:46:47] "POST /student/register_face HTTP/1.1" 200 -
+2025-06-13 09:47:32,337 - INFO - 127.0.0.1 - - [13/Jun/2025 09:47:32] "[31m[1mPOST /student/sessions/1/attend HTTP/1.1[0m" 403 -
+2025-06-13 09:48:35,646 - INFO - 127.0.0.1 - - [13/Jun/2025 09:48:35] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-13 09:49:06,781 - INFO - 127.0.0.1 - - [13/Jun/2025 09:49:06] "POST /teacher/courses/2/sessions/start HTTP/1.1" 200 -
+2025-06-13 09:49:19,046 - INFO - 127.0.0.1 - - [13/Jun/2025 09:49:19] "[35m[1mPOST /student/sessions/2/attend HTTP/1.1[0m" 500 -
+2025-06-13 09:52:26,200 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
+2025-06-13 09:52:29,424 - INFO -  * Restarting with stat
+2025-06-13 09:52:33,787 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:52:40,277 - WARNING -  * Debugger is active!
+2025-06-13 09:52:40,285 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:52:43,807 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
+2025-06-13 09:52:45,359 - INFO -  * Restarting with stat
+2025-06-13 09:52:47,943 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:52:52,595 - WARNING -  * Debugger is active!
+2025-06-13 09:52:52,605 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:53:11,450 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:53:16,524 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 09:53:16,524 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 09:53:16,527 - INFO -  * Restarting with stat
+2025-06-13 09:53:19,088 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 09:53:23,873 - WARNING -  * Debugger is active!
+2025-06-13 09:53:23,883 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 09:53:38,450 - INFO - 127.0.0.1 - - [13/Jun/2025 09:53:38] "[35m[1mPOST /student/sessions/2/attend HTTP/1.1[0m" 500 -
+2025-06-13 10:00:34,470 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\core\\session\\wifi_verification.py', reloading
+2025-06-13 10:00:36,422 - INFO -  * Restarting with stat
+2025-06-13 10:00:39,424 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:00:46,145 - WARNING -  * Debugger is active!
+2025-06-13 10:00:46,159 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 10:00:57,120 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\core\\session\\wifi_verification.py', reloading
+2025-06-13 10:00:58,817 - INFO -  * Restarting with stat
+2025-06-13 10:01:01,448 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:01:06,511 - WARNING -  * Debugger is active!
+2025-06-13 10:01:06,522 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 10:04:17,837 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\core\\session\\wifi_verification.py', reloading
+2025-06-13 10:04:19,536 - INFO -  * Restarting with stat
+2025-06-13 10:04:22,393 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:04:28,448 - WARNING -  * Debugger is active!
+2025-06-13 10:04:28,457 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 10:53:38,464 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:53:43,576 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 10:53:43,576 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 10:53:43,578 - INFO -  * Restarting with stat
+2025-06-13 10:53:46,305 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:53:51,763 - WARNING -  * Debugger is active!
+2025-06-13 10:53:51,774 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 10:53:52,674 - INFO - 127.0.0.1 - - [13/Jun/2025 10:53:52] "GET / HTTP/1.1" 200 -
+2025-06-13 10:54:17,910 - INFO - 127.0.0.1 - - [13/Jun/2025 10:54:17] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 10:54:36,393 - INFO - 127.0.0.1 - - [13/Jun/2025 10:54:36] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-13 10:55:02,561 - INFO - 127.0.0.1 - - [13/Jun/2025 10:55:02] "GET /teacher/courses HTTP/1.1" 200 -
+2025-06-13 10:55:24,754 - INFO - 127.0.0.1 - - [13/Jun/2025 10:55:24] "[35m[1mGET /teacher/courses/2/sessions HTTP/1.1[0m" 500 -
+2025-06-13 10:56:47,499 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 10:57:13,015 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:00:10,431 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:00:55,173 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:01:10,874 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:01:27,218 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:01:32,533 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 11:01:32,533 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 11:01:32,536 - INFO -  * Restarting with stat
+2025-06-13 11:01:35,227 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:01:40,684 - WARNING -  * Debugger is active!
+2025-06-13 11:01:40,695 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 11:01:41,757 - INFO - 127.0.0.1 - - [13/Jun/2025 11:01:41] "GET /teacher/courses/2/sessions HTTP/1.1" 200 -
+2025-06-13 11:02:24,214 - INFO - 127.0.0.1 - - [13/Jun/2025 11:02:24] "[31m[1mPOST /teacher/courses/2/sessions/end HTTP/1.1[0m" 403 -
+2025-06-13 11:02:38,323 - INFO - 127.0.0.1 - - [13/Jun/2025 11:02:38] "[31m[1mPOST /teacher/courses/2/sessions/start HTTP/1.1[0m" 400 -
+2025-06-13 11:02:58,531 - INFO - 127.0.0.1 - - [13/Jun/2025 11:02:58] "POST /teacher/courses/2/sessions/start HTTP/1.1" 200 -
+2025-06-13 11:03:22,988 - INFO - 127.0.0.1 - - [13/Jun/2025 11:03:22] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 11:03:26,385 - INFO - 127.0.0.1 - - [13/Jun/2025 11:03:26] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 11:03:39,225 - INFO - 127.0.0.1 - - [13/Jun/2025 11:03:39] "GET /teacher/courses/2/sessions HTTP/1.1" 200 -
+2025-06-13 11:03:53,043 - INFO - 127.0.0.1 - - [13/Jun/2025 11:03:53] "GET /teacher/sessions/3/attendance HTTP/1.1" 200 -
+2025-06-13 11:03:56,855 - INFO - 127.0.0.1 - - [13/Jun/2025 11:03:56] "GET /teacher/sessions/2/attendance HTTP/1.1" 200 -
+2025-06-13 11:04:00,110 - INFO - 127.0.0.1 - - [13/Jun/2025 11:04:00] "GET /teacher/sessions/1/attendance HTTP/1.1" 200 -
+2025-06-13 11:04:55,892 - INFO - 127.0.0.1 - - [13/Jun/2025 11:04:55] "PUT /teacher/sessions/2/attendance HTTP/1.1" 200 -
+2025-06-13 11:05:17,531 - INFO - 127.0.0.1 - - [13/Jun/2025 11:05:17] "GET /teacher/sessions/2/attendance HTTP/1.1" 200 -
+2025-06-13 11:05:54,709 - INFO - 127.0.0.1 - - [13/Jun/2025 11:05:54] "GET /student/courses HTTP/1.1" 200 -
+2025-06-13 11:06:03,184 - INFO - 127.0.0.1 - - [13/Jun/2025 11:06:03] "GET /student/open_sessions HTTP/1.1" 200 -
+2025-06-13 11:06:03,743 - INFO - 127.0.0.1 - - [13/Jun/2025 11:06:03] "GET /student/open_sessions HTTP/1.1" 200 -
+2025-06-13 11:06:50,587 - INFO - 127.0.0.1 - - [13/Jun/2025 11:06:50] "POST /teacher/courses/2/sessions/start HTTP/1.1" 200 -
+2025-06-13 11:07:14,858 - INFO - 127.0.0.1 - - [13/Jun/2025 11:07:14] "GET /student/open_sessions HTTP/1.1" 200 -
+2025-06-13 11:07:59,558 - INFO - 127.0.0.1 - - [13/Jun/2025 11:07:59] "[31m[1mGET /student/sessions/4/attend HTTP/1.1[0m" 405 -
+2025-06-13 11:08:04,690 - INFO - 127.0.0.1 - - [13/Jun/2025 11:08:04] "[31m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 403 -
+2025-06-13 11:10:29,222 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:10:34,561 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 11:10:34,562 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 11:10:34,564 - INFO -  * Restarting with stat
+2025-06-13 11:10:37,309 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 11:10:42,819 - WARNING -  * Debugger is active!
+2025-06-13 11:10:42,830 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 11:10:43,716 - INFO - 127.0.0.1 - - [13/Jun/2025 11:10:43] "[31m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 401 -
+2025-06-13 11:11:21,494 - INFO - 127.0.0.1 - - [13/Jun/2025 11:11:21] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 11:11:46,775 - INFO - 127.0.0.1 - - [13/Jun/2025 11:11:46] "[35m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 500 -
+2025-06-13 12:21:50,779 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:21:56,336 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 12:21:56,337 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 12:21:56,339 - INFO -  * Restarting with stat
+2025-06-13 12:21:59,004 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:22:04,023 - WARNING -  * Debugger is active!
+2025-06-13 12:22:04,032 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 12:22:07,684 - INFO - 127.0.0.1 - - [13/Jun/2025 12:22:07] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 12:22:35,482 - INFO - 127.0.0.1 - - [13/Jun/2025 12:22:35] "[35m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 500 -
+2025-06-13 12:25:58,102 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:26:03,341 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 12:26:03,341 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 12:26:03,345 - INFO -  * Restarting with stat
+2025-06-13 12:26:05,888 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:26:10,500 - WARNING -  * Debugger is active!
+2025-06-13 12:26:10,511 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 12:26:24,839 - INFO - 127.0.0.1 - - [13/Jun/2025 12:26:24] "[35m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 500 -
+2025-06-13 12:30:14,105 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:30:19,380 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 12:30:19,380 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 12:30:19,382 - INFO -  * Restarting with stat
+2025-06-13 12:30:22,175 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:30:27,926 - WARNING -  * Debugger is active!
+2025-06-13 12:30:27,937 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 12:30:41,693 - INFO - 127.0.0.1 - - [13/Jun/2025 12:30:41] "[35m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 500 -
+2025-06-13 12:33:25,053 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:33:30,489 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 12:33:30,489 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 12:33:30,492 - INFO -  * Restarting with stat
+2025-06-13 12:33:33,169 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:33:38,549 - WARNING -  * Debugger is active!
+2025-06-13 12:33:38,560 - INFO -  * Debugger PIN: 122-993-497
+2025-06-13 12:33:52,856 - INFO - 127.0.0.1 - - [13/Jun/2025 12:33:52] "POST /student/sessions/4/attend HTTP/1.1" 200 -
+2025-06-13 12:36:43,239 - INFO - 127.0.0.1 - - [13/Jun/2025 12:36:43] "[31m[1mPOST /teacher/courses/2/sessions/end HTTP/1.1[0m" 401 -
+2025-06-13 12:37:01,451 - INFO - 127.0.0.1 - - [13/Jun/2025 12:37:01] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-13 12:37:27,092 - INFO - 127.0.0.1 - - [13/Jun/2025 12:37:27] "[31m[1mPOST /teacher/courses/2/sessions/end HTTP/1.1[0m" 403 -
+2025-06-13 12:37:33,316 - INFO - 127.0.0.1 - - [13/Jun/2025 12:37:33] "[31m[1mPOST /teacher/courses/2/sessions/end HTTP/1.1[0m" 403 -
+2025-06-13 12:37:41,365 - INFO - 127.0.0.1 - - [13/Jun/2025 12:37:41] "[31m[1mPOST /teacher/courses/2/sessions/end HTTP/1.1[0m" 403 -
+2025-06-13 12:38:57,090 - INFO - 127.0.0.1 - - [13/Jun/2025 12:38:57] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 12:39:00,357 - INFO - 127.0.0.1 - - [13/Jun/2025 12:39:00] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 12:39:07,037 - INFO - 127.0.0.1 - - [13/Jun/2025 12:39:07] "POST /teacher/courses/2/sessions/end HTTP/1.1" 200 -
+2025-06-13 12:39:09,757 - INFO - 127.0.0.1 - - [13/Jun/2025 12:39:09] "[31m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 401 -
+2025-06-13 12:39:35,069 - INFO - 127.0.0.1 - - [13/Jun/2025 12:39:35] "POST /login/student HTTP/1.1" 200 -
+2025-06-13 12:39:56,709 - INFO - 127.0.0.1 - - [13/Jun/2025 12:39:56] "[31m[1mPOST /student/sessions/4/attend HTTP/1.1[0m" 403 -
+2025-06-13 12:40:26,216 - INFO - 127.0.0.1 - - [13/Jun/2025 12:40:26] "POST /student/register_face HTTP/1.1" 200 -
+2025-06-13 12:42:08,378 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\config.py', reloading
+2025-06-13 12:42:10,368 - INFO -  * Restarting with stat
+2025-06-13 12:42:13,047 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 12:53:02,930 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 13:03:24,602 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 13:09:34,429 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 13:12:34,422 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 13:12:39,455 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-13 13:12:39,455 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-13 13:12:39,463 - INFO -  * Restarting with stat
+2025-06-13 13:12:42,260 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-13 13:12:47,240 - INFO - FakeTensor cache stats:
+2025-06-13 13:12:47,240 - INFO -   cache_hits: 0
+2025-06-13 13:12:47,240 - INFO -   cache_misses: 0
+2025-06-13 13:13:10,509 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
