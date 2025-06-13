@@ -1,5 +1,6 @@
 # Use an official slim Python image
 FROM python:3.10-slim
+RUN apt-get update && apt-get install -y zstd
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
