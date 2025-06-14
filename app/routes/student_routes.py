@@ -173,40 +173,49 @@ def student_register_face():
 
     file = request.files.get('image')
     if not file:
+        print("No image uploaded")
         return jsonify({"success": False, "message": "Image file required"}), 400
 
     # Save image temporarily
     temp_path = f"/tmp/regface_{student_id}.jpg"
     file.save(temp_path)
+    print("Got image file, student_id:", student_id)
+    print("Saved to temp:", temp_path)
+
     img = cv2.imread(temp_path)
     if img is None:
+        print("Failed to load image with cv2")
         os.remove(temp_path)
         return jsonify({"success": False, "message": "Invalid image file"}), 400
+    else:
+        print("Loaded img.shape:", img.shape)
 
     frs = FaceRecognitionSystem()
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
     if not encoding_result.get("success") or encoding_result.get("encoding") is None:
         os.remove(temp_path)
+        print("Face encoding failed:", encoding_result.get("message"))
         return jsonify({
             "success": False,
             "message": encoding_result.get("message", "Failed to register face")
         })
 
-    # Save face encoding to Student DB
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         os.remove(temp_path)
+        print("No student found in DB")
         return jsonify({"success": False, "message": "Student not found"}), 404
 
-    student.face_encoding = encoding_result["encoding"]  # Should be list of floats (ARRAY in Postgres)
+    student.face_encoding = encoding_result["encoding"]
     db.session.commit()
 
-    # Save cropped/processed face image to stored_images/
     processed = encoding_result.get("preprocessed", img)
     images_dir = os.path.join(os.getcwd(), 'stored_images')
     os.makedirs(images_dir, exist_ok=True)
     image_path = os.path.join(images_dir, f"{student_id}.jpg")
+    print("Saving processed face to:", image_path)
     cv2.imwrite(image_path, processed)
 
     os.remove(temp_path)
+    print("Registration success for:", student_id)
     return jsonify({"success": True, "message": "Face successfully registered and saved."})
