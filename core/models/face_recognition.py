@@ -327,13 +327,24 @@ class FaceRecognitionSystem:
 
             stored_encodings = self.multiple_encodings.get(student_id, [])
             if not stored_encodings:
-                stored_path = os.path.join(Config.STORED_IMAGES_DIR, f"{student_id}.jpg")
-                if os.path.exists(stored_path):
-                    stored_img = cv2.imread(stored_path)
-                    if stored_img is not None:
-                        result = self.get_face_encoding_for_storage(stored_img)
-                        if result["success"]:
-                            stored_encodings = [result["encoding"]]
+                try:
+                    # Lazy import here to avoid circular import
+                    from app.models import Student, db
+                    student_record = Student.query.filter_by(student_id=student_id).first()
+                    if student_record and student_record.face_encoding:
+                        try:
+                            # If face_encoding is stored as a JSON string
+                            if isinstance(student_record.face_encoding, str):
+                                encoding = np.array(json.loads(student_record.face_encoding))
+                            # If stored as array already
+                            else:
+                                encoding = np.array(student_record.face_encoding)
+                            if encoding.ndim == 1:
+                                stored_encodings = [encoding.tolist()]
+                        except Exception as parse_exc:
+                            pass
+                except Exception as db_exc:
+                    pass
 
             if not stored_encodings:
                 self.metrics["failures"] += 1

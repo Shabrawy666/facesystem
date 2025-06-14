@@ -36,9 +36,8 @@ torch==2.7.1+cpu
 torchvision==0.22.1
 torchaudio==2.7.1
 --extra-index-url https://download.pytorch.org/whl/cpu
-
 tensorflow-cpu==2.19.0
-tf-keras        # <<--- ADD THIS LINE
+tf-keras==2.15.0
 
 # Face/vision
 opencv-python==4.11.0.86
@@ -58,6 +57,3 @@ blinker==1.9.0
 markdown-it-py==3.0.0
 rich==14.0.0
 tqdm==4.67.1
-
-# If you use tensorboard for local development, keep (optional for deployments)
-tensorboard==2.19.0
