@@ -236,9 +236,6 @@ class FaceRecognitionSystem:
 
     def verify_student(self, student_id: str, captured_image: np.ndarray) -> RecognitionResult:
         """Enhanced verification with multiple encodings and liveness"""
-        import numpy as np
-        import os
-        import time
         start_time = time.time()
         self.metrics["attempts"] += 1
 
@@ -248,38 +245,21 @@ class FaceRecognitionSystem:
 
             live_result = self.liveness_detector.analyze(captured_image)
             print(f"[Verify] Liveness result: {live_result}")
-
+            
             if not live_result.get("live", True):
                 self.metrics["failures"] += 1
                 return RecognitionResult(
                     success=False,
                     error_message=f"Liveness check failed: {live_result.get('message', 'Unknown')}",
                     verification_type="liveness",
-                    data={"liveness_score": float(live_result.get("score", 0.0))}
+                    data={"liveness_score": live_result.get("score", 0.0)}
                 )
 
             stored_repr = self.get_student_encoding(student_id)
             multiple_encodings = self.multiple_encodings.get(student_id, [])
-            print(f"[Verify] stored_repr (raw):", stored_repr)
-            print(f"[Verify] multiple_encodings (raw):", multiple_encodings)
-
-            # Defensive: parse stored_repr into a list of floats if it is a string
-            parsed_encodings = []
-            if stored_repr is not None:
-                if isinstance(stored_repr, str):
-                    parsed_encodings = [[float(x) for x in stored_repr.split(',')]]
-                elif isinstance(stored_repr, (np.ndarray, list, tuple)):
-                    # Could be a single encoding or list of encodings
-                    first = stored_repr[0] if isinstance(stored_repr, (list, tuple)) and len(stored_repr) and isinstance(stored_repr[0], (list, np.ndarray)) else stored_repr
-                    # We always want [encoding] format for single encoding
-                    parsed_encodings = [list(first)] if isinstance(first, (np.ndarray, list, tuple)) else [list(stored_repr)]
-                elif isinstance(stored_repr, dict) and "embedding" in stored_repr:
-                    parsed_encodings = [stored_repr["embedding"]]
-            print(f"[Verify] parsed_encodings:", parsed_encodings)
-
-            if not parsed_encodings and not multiple_encodings:
+            
+            if stored_repr is None and not multiple_encodings:
                 self.metrics["failures"] += 1
-                print("[Verify] No stored profile found for student.")
                 return RecognitionResult(
                     success=False,
                     error_message="No stored profile found",
@@ -289,7 +269,6 @@ class FaceRecognitionSystem:
             preprocessed = self.image_preprocessor.preprocess_image(captured_image)
             if preprocessed is None:
                 self.metrics["failures"] += 1
-                print("[Verify] Image preprocessing failed!")
                 return RecognitionResult(
                     success=False,
                     error_message="Failed to preprocess image",
@@ -298,6 +277,7 @@ class FaceRecognitionSystem:
 
             temp_path = f"temp_verify_{int(time.time())}.jpg"
             cv2.imwrite(temp_path, (preprocessed * 255).astype(np.uint8))
+
             try:
                 live_repr = DeepFace.represent(
                     img_path=temp_path,
@@ -310,40 +290,42 @@ class FaceRecognitionSystem:
 
             if not live_repr:
                 self.metrics["failures"] += 1
-                print("[Verify] Failed to generate embedding from captured image.")
                 return RecognitionResult(
                     success=False,
                     error_message="Failed to generate encoding",
                     verification_type="encoding"
                 )
 
-            captured_embedding = np.array(live_repr[0]["embedding"])
             best_similarity = 0.0
             best_distance = 1.0
-
-            # Compare with all stored encodings
-            all_encs = parsed_encodings + (multiple_encodings if multiple_encodings else [])
-            print(f"[Verify] all_encs for comparison:", all_encs)
-            weights = self.encoding_weights.get(student_id, [1.0] * len(all_encs))
-            similarities = []
-            for emb, weight in zip(all_encs, weights):
-                embedding = np.array(emb)
-                similarity = self._calculate_similarity(captured_embedding, embedding)
-                weighted_similarity = similarity * weight
-                similarities.append(weighted_similarity)
-            if similarities:
-                best_similarity = max(similarities)
-                best_distance = 1.0 - best_similarity
-            else:
-                print("[Verify] No valid stored embeddings to compare.")
-                best_similarity = 0.0
-                best_distance = 1.0
+            captured_embedding = np.array(live_repr[0]["embedding"])
+            
+            if stored_repr:
+                stored_embedding = np.array(stored_repr[0]["embedding"])
+                similarity = self._calculate_similarity(captured_embedding, stored_embedding)
+                best_similarity = max(best_similarity, similarity)
+                best_distance = min(best_distance, 1.0 - similarity)
+            
+            if multiple_encodings:
+                weights = self.encoding_weights.get(student_id, [1.0] * len(multiple_encodings))
+                weighted_similarities = []
+                
+                for encoding, weight in zip(multiple_encodings, weights):
+                    stored_embedding = np.array(encoding)
+                    similarity = self._calculate_similarity(captured_embedding, stored_embedding)
+                    weighted_similarities.append(similarity * weight)
+                
+                if weighted_similarities:
+                    avg_weighted_similarity = np.mean(weighted_similarities)
+                    best_similarity = max(best_similarity, avg_weighted_similarity)
+                    best_distance = min(best_distance, 1.0 - avg_weighted_similarity)
 
             dynamic_threshold = self._get_dynamic_threshold(student_id)
             verified = best_distance <= dynamic_threshold
+            
             self._update_student_threshold(student_id, best_similarity, verified)
-            elapsed = time.time() - start_time
 
+            elapsed = time.time() - start_time
             if verified:
                 self.metrics["successes"] += 1
                 prev = self.metrics["successes"] - 1
@@ -354,7 +336,6 @@ class FaceRecognitionSystem:
             else:
                 self.metrics["failures"] += 1
 
-            print(f"[Verify] best_similarity: {best_similarity}, best_distance: {best_distance}, dynamic_threshold: {dynamic_threshold}, verified: {verified}")
             return RecognitionResult(
                 success=verified,
                 confidence_score=best_similarity,
@@ -363,13 +344,13 @@ class FaceRecognitionSystem:
                 data={
                     "distance": best_distance,
                     "threshold_used": dynamic_threshold,
-                    "liveness_score": float(live_result.get("score", 1.0)),
-                    "encodings_compared": len(all_encs)
+                    "liveness_score": live_result.get("score", 1.0),
+                    "encodings_compared": len(multiple_encodings) + (1 if stored_repr else 0)
                 }
             )
 
         except Exception as e:
-            logging.error(f"[Verify] Verification error: {e}")
+            logging.error(f"Verification error: {e}")
             self.metrics["failures"] += 1
             return RecognitionResult(
                 success=False,
