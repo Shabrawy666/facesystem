@@ -5,12 +5,14 @@ import numpy as np
 from core.models.face_recognition import FaceRecognitionSystem
 from core.models.liveness_detection import LivenessDetector
 from core.models.image_processor import ImagePreprocessor
+
 try:
     from core.utils.config import Config
     STORED_IMAGES_DIR = Config.STORED_IMAGES_DIR
 except Exception:
-    # Fallback if Config is missing or misconfigured
-    STORED_IMAGES_DIR = os.path.join(os.getcwd(), 'stored_images')
+    # Fallback: Default to local project 'stored_images'
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    STORED_IMAGES_DIR = os.path.join(SCRIPT_DIR, '..', 'stored_images')
 
 # --- Singleton System Loader ---
 _system = None
