@@ -7,6 +7,7 @@ import json
 from core.models.face_recognition import FaceRecognitionSystem
 from app.ml_backend import verify_attendance_backend, register_face_backend
 from core.session.wifi_verification import WifiVerificationSystem
+from core.utils.config import Config
 from enum import Enum
 from dataclasses import asdict, is_dataclass
 
@@ -219,7 +220,7 @@ def student_register_face():
         raise
 
     processed = encoding_result.get("preprocessed", img)
-    images_dir = os.path.join(os.getcwd(), 'stored_images')
+    images_dir = Config.STORED_IMAGES_DIR
     os.makedirs(images_dir, exist_ok=True)
     image_path = os.path.join(images_dir, f"{student_id}.jpg")
     print("Saving processed face to:", image_path)
