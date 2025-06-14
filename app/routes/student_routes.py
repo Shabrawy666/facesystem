@@ -1,18 +1,15 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.models import Student, Course, AttendanceSession, Attendancelog, db, bytes_to_numpy_image
-import os
 import cv2
 import json
 from core.models.face_recognition import FaceRecognitionSystem
-from app.ml_backend import verify_attendance_from_db, register_face_backend
+from app.ml_backend import verify_attendance_from_db, register_face_backend, get_liveness_system
 from core.session.wifi_verification import WifiVerificationSystem
 from enum import Enum
 from dataclasses import asdict, is_dataclass
-import numpy as np
 
 def to_json_safe(obj):
-    # Handle dataclass (including nested dataclasses)
     if is_dataclass(obj):
         return to_json_safe(asdict(obj))
     elif isinstance(obj, dict):
@@ -119,13 +116,14 @@ def student_attend(session_id):
 
     safe_wifi_result = {k: serialize_value(v) for k, v in wifi_result.items()}
 
-    # --- CHANGED: Process face as numpy array, no temp file!
+    # --- IN-MEMORY Numpy Image Decode ---
     img_bytes = file.read()
     img = bytes_to_numpy_image(img_bytes)
     if img is None:
         return jsonify({"success": False, "message": "Invalid image file"}), 400
 
-    # ML backend with DB reference: web-uploaded face vs. student DB face
+    # RUN BOTH FACE RECOGNITION AND LIVENESS
+    # (verify_attendance_from_db does both and returns all required scores)
     result = verify_attendance_from_db(student_id, captured_img=img)
 
     # Merge safe wifi_result into result (override only if not already in 'result')
@@ -135,6 +133,7 @@ def student_attend(session_id):
         if k not in result:
             result[k] = v
 
+    # Attendance is logged ONLY if both face and liveness succeed!
     if result and result.get("success"):
         log = Attendancelog.query.filter_by(
             student_id=student_id,
@@ -160,10 +159,8 @@ def student_attend(session_id):
             db.session.add(log)
         db.session.commit()
 
-        import pprint
-        pprint.pprint(result)
-
     return jsonify(to_json_safe(result))
+
 
 @student_bp.route('/student/register_face', methods=['POST'])
 @jwt_required()
@@ -181,6 +178,17 @@ def student_register_face():
     img = bytes_to_numpy_image(img_bytes)
     if img is None:
         return jsonify({"success": False, "message": "Invalid image file"}), 400
+
+    # -- ENFORCE ANTI-SPOOF/LIVENESS FOR REGISTRATION --
+    liveness_result = get_liveness_system().analyze(img)
+    liveness_score = float(liveness_result.get("score", 0.0))
+    is_live = bool(liveness_result.get("live", True))
+    if not is_live or liveness_score < 0.8:  # threshold as in attend
+        return jsonify({
+            "success": False,
+            "message": "Anti-spoofing check failed: Live person not detected. Please provide a real/live photo.",
+            "liveness_score": liveness_score
+        }), 400
 
     # ML backend: handles saving cropped face to DB and creating encoding
     reg_result = register_face_backend(student_id=student_id, image=img)

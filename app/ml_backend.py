@@ -62,9 +62,11 @@ def verify_attendance_backend(student_id: str, image: np.ndarray = None, file_pa
 
 def verify_attendance_from_db(student_id: str, captured_img: np.ndarray):
     """
-    Verifies a submitted image (from web) against the student's reference face image stored in the database.
-    Returns full comparison result.
+    Verifies a submitted image (from web) against the student's reference face image stored in the database,
+    and only returns success if BOTH face recognition and anti-spoof liveness check PASS.
     """
+    from app.ml_backend import get_liveness_system  # Avoid circular import if in ml_backend.py
+
     try:
         student = Student.query.filter_by(student_id=student_id).one()
     except NoResultFound:
@@ -73,25 +75,45 @@ def verify_attendance_from_db(student_id: str, captured_img: np.ndarray):
     if not student.face_image:
         return {"success": False, "message": "No stored face image in DB for this student."}
 
-    # Reference image = from DB, captured_img = from user/web
     reference_img = bytes_to_numpy_image(student.face_image)
     if reference_img is None:
         return {"success": False, "message": "Stored facial image is corrupted or unreadable."}
 
+    # 1. FACE RECOGNITION
     frs = get_face_system()
-    result = frs.verify_student(student_id, captured_img)
-    data = getattr(result, "data", {}) or {}
+    face_result = frs.verify_student(student_id, captured_img)
+    face_data = getattr(face_result, "data", {}) or {}
 
-    # Build result for endpoint
+    face_success = bool(getattr(face_result, "success", False))
+    confidence_score = float(getattr(face_result, "confidence_score", 0.0))
+    distance = float(face_data.get("distance")) if face_data.get("distance") is not None else None
+    threshold = float(face_data.get("threshold_used")) if face_data.get("threshold_used") is not None else None
+
+    # 2. LIVENESS/ANTI-SPOOF DETECTION: Always enforced!
+    liveness = get_liveness_system()
+    liveness_result = liveness.analyze(captured_img)
+    liveness_score = float(liveness_result.get("score", 0.0))
+    is_live = bool(liveness_result.get("live", True))
+    liveness_pass = is_live and liveness_score > 0.8  # You can adjust this threshold!
+
+    # 3. Final result is only success if BOTH pass:
+    overall_success = face_success and liveness_pass
+
     return {
-        "success": getattr(result, "success", False),
-        "confidence_score": getattr(result, "confidence_score", 0.0),
-        "liveness_score": data.get("liveness_score"),
-        "distance": data.get("distance"),
-        "message": getattr(result, "error_message", "Verification successful") if not getattr(result, "success", False) else "Verification successful",
-        "model_used": data.get("model_used", "Facenet"),
-        "threshold": data.get("threshold_used"),
-        # Any other fields as needed...
+        "success": overall_success,
+        "face_match_pass": face_success,
+        "confidence_score": confidence_score,
+        "distance": distance,
+        "threshold": threshold,
+        "liveness_score": liveness_score,
+        "liveness_pass": liveness_pass,
+        "model_used": face_data.get("model_used", "Facenet"),
+        "message": (
+            "Verification and liveness passed." if overall_success else
+            "Verification failed: "
+            + ("" if face_success else "Face match failed. ")
+            + ("" if liveness_pass else "Anti-spoof/liveness failed (not a live face).")
+        )
     }
 
 # --- Student Face Registration (API) ---
