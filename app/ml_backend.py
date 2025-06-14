@@ -79,8 +79,20 @@ def verify_attendance_from_db(student_id: str, captured_img: np.ndarray):
         return {"success": False, "message": "Stored facial image is corrupted or unreadable."}
 
     frs = get_face_system()
-    result = frs.verify_student(stored_image=reference_img, captured_image=captured_img)
-    return result
+    result = frs.verify_student(student_id, captured_img)
+    data = getattr(result, "data", {}) or {}
+
+    # Build result for endpoint
+    return {
+        "success": getattr(result, "success", False),
+        "confidence_score": getattr(result, "confidence_score", 0.0),
+        "liveness_score": data.get("liveness_score"),
+        "distance": data.get("distance"),
+        "message": getattr(result, "error_message", "Verification successful") if not getattr(result, "success", False) else "Verification successful",
+        "model_used": data.get("model_used", "Facenet"),
+        "threshold": data.get("threshold_used"),
+        # Any other fields as needed...
+    }
 
 # --- Student Face Registration (API) ---
 def register_face_backend(student_id: str, image: np.ndarray = None, file_path: str = None):
