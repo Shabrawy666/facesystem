@@ -37,7 +37,7 @@ torchvision==0.22.1
 torchaudio==2.7.1
 --extra-index-url https://download.pytorch.org/whl/cpu
 tensorflow-cpu==2.19.0
-tf-keras==2.15.0
+tf-keras
 
 # Face/vision
 opencv-python==4.11.0.86
