@@ -1,5 +1,3 @@
-temp_images/
-stored_images/
 .encodings_cache.pkl
 .env
 venv/
@@ -13,8 +11,6 @@ __pycache__/
 *.db
 datasets/
 videos/
-*.h5
-*.pth
 *.tar
 *.zip
 *.npy
