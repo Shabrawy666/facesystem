@@ -245,4 +245,4 @@ def student_attend_latest_session(course_id):
             db.session.add(log)
         db.session.commit()
 
-    return jsonify(result)
+    return jsonify(to_json_safe(result))
