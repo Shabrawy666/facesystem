@@ -220,7 +220,7 @@ def student_register_face():
         raise
 
     processed = encoding_result.get("preprocessed", img)
-    images_dir = Config.STORED_IMAGES_DIR
+    images_dir = os.path.join(os.getcwd(), 'stored_images')
     os.makedirs(images_dir, exist_ok=True)
     image_path = os.path.join(images_dir, f"{student_id}.jpg")
     print("Saving processed face to:", image_path)
