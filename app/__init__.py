@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_cors import CORS
+from flask import Blueprint
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -29,7 +30,7 @@ def create_app():
     from app.routes.student_routes import student_bp
     from app.routes import default_bp
     app.register_blueprint(default_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(teacher_bp)
-    app.register_blueprint(student_bp)
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
+    app.register_blueprint(student_bp, url_prefix='/api/student')
     return app
