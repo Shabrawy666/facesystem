@@ -14,15 +14,6 @@ from core.models.image_processor import ImagePreprocessor
 from core.models.liveness_detection import LivenessDetector
 from data.structures import RecognitionResult
 
-# --- DB FACE IMAGE HELPER ---
-try:
-    # Only import these in deployed API context, not if running model as a standalone script
-    from app.models import Student, bytes_to_numpy_image
-    from sqlalchemy.orm.exc import NoResultFound
-except ImportError:
-    Student = None
-    bytes_to_numpy_image = None
-
 class FaceRecognitionSystem:
     """Mobile-optimized face recognition system with Facenet and in-memory processing."""
 
@@ -31,24 +22,23 @@ class FaceRecognitionSystem:
             self.encoding_cache = EncodingCache()
             self.image_preprocessor = ImagePreprocessor()
             self.liveness_detector = LivenessDetector()
-
-            # --- these can now go (no more disk-only stored images), but left for batch/dev mode
             self.stored_images = self._load_stored_images()
             self._cache_stored_images()
-            # ---
-
             self.multiple_encodings = {}
             self.encoding_weights = {}
             self.student_thresholds = {}
             self._load_multiple_encodings()
-
+            
+            # Load models optimized for mobile deployment
             self._load_face_models()
+            
             self.metrics = {
                 "attempts": 0,
                 "successes": 0,
                 "failures": 0,
                 "avg_time": 0.0
             }
+            
         except Exception as e:
             logging.error(f"Init failed: {e}")
             raise SystemInitializationError(str(e))
@@ -56,14 +46,19 @@ class FaceRecognitionSystem:
     def _load_face_models(self):
         """Load Facenet model - optimized for mobile deployment"""
         try:
+            # Suppress TensorFlow warnings
             tf.get_logger().setLevel('ERROR')
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+            
+            # Initialize model as None - we'll use DeepFace.represent() directly
             self.facenet_model = None
             self.model_name = "Facenet"
-
+            
+            # Test DeepFace.represent() to ensure it works
             test_img = np.random.rand(160, 160, 3).astype(np.uint8)
             temp_path = "temp_test.jpg"
             cv2.imwrite(temp_path, test_img)
+            
             try:
                 _ = DeepFace.represent(img_path=temp_path, model_name=self.model_name, enforce_detection=False)
                 if os.path.exists(temp_path):
@@ -72,26 +67,32 @@ class FaceRecognitionSystem:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
                 raise e
+                
         except Exception as e:
             logging.error(f"Error loading Facenet model: {e}")
             raise SystemInitializationError(f"Failed to load face recognition model: {e}")
 
     def _create_temp_file_from_array(self, img_array: np.ndarray) -> str:
-        """(Used only for DeepFace-compat extract: remains unchanged)"""
+        """Create a temporary file from numpy array"""
         try:
+            # Ensure image is in correct format
             if img_array.dtype != np.uint8:
                 if img_array.max() <= 1.0:
                     img_array = (img_array * 255).astype(np.uint8)
                 else:
                     img_array = img_array.astype(np.uint8)
+            
+            # Create unique temporary filename
             temp_path = f"temp_face_{int(time.time() * 1000)}.jpg"
             cv2.imwrite(temp_path, img_array)
             return temp_path
+            
         except Exception as e:
             logging.error(f"Error creating temporary file: {e}")
             raise
 
     def _cleanup_temp_file(self, temp_path: str):
+        """Safely clean up temporary file"""
         try:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
@@ -99,22 +100,31 @@ class FaceRecognitionSystem:
             logging.error(f"Error cleaning up temp file {temp_path}: {e}")
 
     def _extract_embedding_direct(self, face_img: np.ndarray) -> Optional[np.ndarray]:
+        """Extract embedding using DeepFace.represent() with minimal file I/O"""
         temp_path = None
         try:
+            # Create temporary file
             temp_path = self._create_temp_file_from_array(face_img)
+            
+            # Get embedding using DeepFace.represent
             result = DeepFace.represent(
                 img_path=temp_path,
                 model_name=self.model_name,
                 enforce_detection=False
             )
+            
             if result and len(result) > 0:
                 embedding = np.array(result[0]["embedding"])
+                
+                # L2 normalize embedding
                 norm = np.linalg.norm(embedding)
                 if norm != 0:
                     embedding = embedding / norm
+                
                 return embedding
             else:
                 return None
+                
         except Exception as e:
             logging.error(f"Error extracting embedding: {e}")
             return None
@@ -122,17 +132,17 @@ class FaceRecognitionSystem:
             if temp_path:
                 self._cleanup_temp_file(temp_path)
 
-    # ====================== CHANGED: DB ENABLED IMAGE FETCH =====================
     def _load_stored_images(self) -> List[str]:
-        """For dev: loads image file names (not used in production DB cloud mode)."""
+        """Load stored face images"""
         os.makedirs(Config.STORED_IMAGES_DIR, exist_ok=True)
         return [
             os.path.join(Config.STORED_IMAGES_DIR, f)
             for f in os.listdir(Config.STORED_IMAGES_DIR)
             if f.lower().endswith((".jpg", ".jpeg", ".png"))
         ]
+
     def _cache_stored_images(self):
-        # (Unused in DB-first version)
+        """Pre-cache encodings for stored images"""
         for path in self.stored_images:
             self.encoding_cache.get_encoding(path)
 
@@ -242,9 +252,10 @@ class FaceRecognitionSystem:
         self._save_multiple_encodings()
 
     def get_face_encoding_for_storage(self, img: np.ndarray, student_id: str = None) -> Dict:
-        """Generate face encoding from a processed image array."""
+        """Generate face encoding with minimal file I/O"""
         try:
             quality_score = self._assess_image_quality(img)
+            
             if quality_score < 0.3:
                 return {
                     "success": False,
@@ -252,6 +263,7 @@ class FaceRecognitionSystem:
                     "encoding": None,
                     "quality_score": quality_score
                 }
+            
             preprocessed = self.image_preprocessor.preprocess_image(img)
             if preprocessed is None:
                 return {
@@ -259,24 +271,28 @@ class FaceRecognitionSystem:
                     "message": "Face preprocessing failed - no face detected",
                     "encoding": None
                 }
+
             if preprocessed.dtype != np.uint8:
                 if preprocessed.max() <= 1.0:
                     preprocessed = (preprocessed * 255).astype(np.uint8)
                 else:
                     preprocessed = preprocessed.astype(np.uint8)
+
             embedding = self._extract_embedding_direct(preprocessed)
+            
             if embedding is not None:
                 confidence = self._calculate_encoding_confidence(embedding)
+                
                 if student_id:
                     self._add_multiple_encoding(student_id, embedding, quality_score)
+                
                 return {
                     "success": True,
                     "encoding": embedding.tolist(),
                     "message": "OK",
                     "quality_score": quality_score,
                     "model_used": "Facenet",
-                    "confidence": confidence,
-                    "preprocessed": preprocessed  # USED by backend to save cropped DB image too!
+                    "confidence": confidence
                 }
             else:
                 return {
@@ -284,6 +300,7 @@ class FaceRecognitionSystem:
                     "message": "Failed to generate face embedding",
                     "encoding": None
                 }
+
         except Exception as e:
             return {
                 "success": False,
@@ -292,12 +309,13 @@ class FaceRecognitionSystem:
             }
 
     def verify_student(self, student_id: str, captured_image: np.ndarray) -> RecognitionResult:
-        """Enhanced verification for attendance: use reference from DB not disk!"""
+        """Enhanced verification with minimal file I/O"""
         start_time = time.time()
         self.metrics["attempts"] += 1
 
         try:
             live_result = self.liveness_detector.analyze(captured_image)
+            
             if not live_result.get("live", True):
                 self.metrics["failures"] += 1
                 return RecognitionResult(
@@ -307,22 +325,15 @@ class FaceRecognitionSystem:
                     data={"liveness_score": live_result.get("score", 0.0)}
                 )
 
-            ### DB-ENABLED: get stored encoding by DB not disk
             stored_encodings = self.multiple_encodings.get(student_id, [])
             if not stored_encodings:
-                # Try to extract encoding live from DB-stored image
-                db_img = None
-                if Student is not None and bytes_to_numpy_image is not None:
-                    try:
-                        student = Student.query.filter_by(student_id=student_id).one()
-                        if student.face_image:
-                            db_img = bytes_to_numpy_image(student.face_image)
-                    except Exception as e:
-                        db_img = None
-                if db_img is not None:
-                    result = self.get_face_encoding_for_storage(db_img)
-                    if result["success"]:
-                        stored_encodings = [result["encoding"]]
+                stored_path = os.path.join(Config.STORED_IMAGES_DIR, f"{student_id}.jpg")
+                if os.path.exists(stored_path):
+                    stored_img = cv2.imread(stored_path)
+                    if stored_img is not None:
+                        result = self.get_face_encoding_for_storage(stored_img)
+                        if result["success"]:
+                            stored_encodings = [result["encoding"]]
 
             if not stored_encodings:
                 self.metrics["failures"] += 1
@@ -358,6 +369,7 @@ class FaceRecognitionSystem:
 
             similarities = []
             weights = self.encoding_weights.get(student_id, [1.0] * len(stored_encodings))
+            
             for stored_encoding, weight in zip(stored_encodings, weights):
                 stored_emb = np.array(stored_encoding)
                 similarity = self._calculate_similarity(captured_embedding, stored_emb)
@@ -365,13 +377,14 @@ class FaceRecognitionSystem:
                 similarities.append(weighted_similarity)
 
             best_similarity = max(similarities) if similarities else 0.0
+
             dynamic_threshold = self._get_dynamic_threshold(student_id)
             distance = 1.0 - best_similarity
             verified = distance <= dynamic_threshold
-
+            
             self._update_student_threshold(student_id, best_similarity, verified)
-            elapsed = time.time() - start_time
 
+            elapsed = time.time() - start_time
             if verified:
                 self.metrics["successes"] += 1
                 prev = self.metrics["successes"] - 1
