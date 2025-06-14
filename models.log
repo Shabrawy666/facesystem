@@ -451,3 +451,24 @@
 2025-06-13 13:12:47,240 - INFO -   cache_misses: 0
 2025-06-13 13:13:10,509 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
 
+2025-06-14 13:16:28,095 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-14 13:16:34,198 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.9:5000
+2025-06-14 13:16:34,199 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-14 13:16:34,200 - INFO -  * Restarting with stat
+2025-06-14 13:16:36,881 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-14 13:16:42,607 - WARNING -  * Debugger is active!
+2025-06-14 13:16:42,618 - INFO -  * Debugger PIN: 122-993-497
+2025-06-14 13:16:59,301 - INFO - 127.0.0.1 - - [14/Jun/2025 13:16:59] "GET / HTTP/1.1" 200 -
+2025-06-14 13:18:10,643 - INFO - 127.0.0.1 - - [14/Jun/2025 13:18:10] "POST /login/teacher HTTP/1.1" 200 -
+2025-06-14 13:18:36,696 - INFO - 127.0.0.1 - - [14/Jun/2025 13:18:36] "POST /login/student HTTP/1.1" 200 -
+2025-06-14 13:19:35,758 - INFO - 127.0.0.1 - - [14/Jun/2025 13:19:35] "POST /student/register_face HTTP/1.1" 200 -
+2025-06-14 13:19:58,128 - INFO - 127.0.0.1 - - [14/Jun/2025 13:19:58] "POST /student/register_face HTTP/1.1" 200 -
+2025-06-14 13:20:31,533 - INFO - 127.0.0.1 - - [14/Jun/2025 13:20:31] "POST /student/sessions/7/attend HTTP/1.1" 200 -
+2025-06-14 13:21:10,155 - INFO - 127.0.0.1 - - [14/Jun/2025 13:21:10] "POST /student/sessions/7/attend HTTP/1.1" 200 -
+2025-06-14 13:21:24,246 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
+2025-06-14 13:21:26,305 - INFO -  * Restarting with stat
