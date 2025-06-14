@@ -21,7 +21,7 @@ source="storedimages"
 destination="/app/stored_images"
 
 [[vm]]
-  memory = '1gb'
+  memory = '4gb'
   cpu_kind = 'shared'
-  cpus = 2
+  cpus = 4
   memory_mb = 4096
