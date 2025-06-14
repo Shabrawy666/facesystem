@@ -139,9 +139,10 @@ def student_register_face():
         os.remove(temp_path)
         return jsonify({"success": False, "message": "Student not found"}), 404
     student.face_encoding = encoding_result["encoding"]  # typically a list/array
+    db.session.commit()
+
     frs._add_multiple_encoding(student_id, encoding_result["encoding"], encoding_result.get("quality_score", 0.6))
     frs._save_multiple_encodings()
-    db.session.commit()
 
     # Save processed face image for dashboard/history
     processed = encoding_result.get("preprocessed", img)
