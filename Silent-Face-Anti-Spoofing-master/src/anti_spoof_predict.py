@@ -35,8 +35,18 @@ MODEL_MAPPING = {
 
 class Detection:
     def __init__(self):
-        caffemodel = "./resources/detection_model/Widerface-RetinaFace.caffemodel"
-        deploy = "./resources/detection_model/deploy.prototxt"
+        # Find the parent "Silent-Face-Anti-Spoofing-master" directory
+        here = os.path.dirname(os.path.abspath(__file__))        # .../src/
+        master_dir = os.path.abspath(os.path.join(here, ".."))   # .../Silent-Face-Anti-Spoofing-master/
+        detection_dir = os.path.join(master_dir, "resources", "detection_model")
+        caffemodel = os.path.join(detection_dir, "Widerface-RetinaFace.caffemodel")
+        deploy = os.path.join(detection_dir, "deploy.prototxt")
+
+        # Debug print: see where it's looking (optional, but good for cloud deployment troubleshooting)
+        print("Looking for deploy.prototxt at:", deploy)
+        print("Looking for caffemodel at:", caffemodel)
+        print("Files in detection_model folder:", os.listdir(detection_dir))
+
         self.detector = cv2.dnn.readNetFromCaffe(deploy, caffemodel)
         self.detector_confidence = 0.6
 
