@@ -15,9 +15,8 @@ primary_region = 'cdg'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
-[
-mounts
-]
+  
+[mounts]
 source="storedimages"
 destination="/app/stored_images"
 
