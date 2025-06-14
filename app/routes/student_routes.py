@@ -1,14 +1,15 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from app.models import Student, Course, AttendanceSession, Attendancelog, db
+from app.models import Student, Course, AttendanceSession, Attendancelog, db, bytes_to_numpy_image
 import os
 import cv2
 import json
 from core.models.face_recognition import FaceRecognitionSystem
-from app.ml_backend import verify_attendance_backend, register_face_backend
+from app.ml_backend import verify_attendance_from_db, register_face_backend
 from core.session.wifi_verification import WifiVerificationSystem
 from enum import Enum
 from dataclasses import asdict, is_dataclass
+import numpy as np
 
 def to_json_safe(obj):
     # Handle dataclass (including nested dataclasses)
@@ -33,7 +34,6 @@ def to_json_safe(obj):
 
 student_bp = Blueprint('student', __name__)
 
-# Singleton instance at module level
 wifi_verification_system = WifiVerificationSystem()
 
 @student_bp.route('/student/courses', methods=['GET'])
@@ -108,7 +108,6 @@ def student_attend(session_id):
     connection_strength = wifi_result.get("connection_strength")
     strength_label = wifi_result.get("strength_label")
 
-    # SAFETY: Remove/set all non-JSON-serializable/enum/set fields!
     def serialize_value(val):
         if isinstance(val, set):
             return list(val)
@@ -120,11 +119,14 @@ def student_attend(session_id):
 
     safe_wifi_result = {k: serialize_value(v) for k, v in wifi_result.items()}
 
-    # Save image temporarily
-    temp_path = f"/tmp/uploaded_{student_id}_{session_id}.jpg"
-    file.save(temp_path)
-    result = verify_attendance_backend(student_id, temp_path)
-    os.remove(temp_path)
+    # --- CHANGED: Process face as numpy array, no temp file!
+    img_bytes = file.read()
+    img = bytes_to_numpy_image(img_bytes)
+    if img is None:
+        return jsonify({"success": False, "message": "Invalid image file"}), 400
+
+    # ML backend with DB reference: web-uploaded face vs. student DB face
+    result = verify_attendance_from_db(student_id, captured_img=img)
 
     # Merge safe wifi_result into result (override only if not already in 'result')
     result["connection_strength"] = safe_wifi_result.get("connection_strength")
@@ -175,42 +177,29 @@ def student_register_face():
     if not file:
         return jsonify({"success": False, "message": "Image file required"}), 400
 
-    # --- EDIT: Save image bytes to DB for future decode/use
     img_bytes = file.read()
-    file.seek(0)  # Reset file pointer for cv2.imread
-    temp_path = f"/tmp/regface_{student_id}.jpg"
-    file.save(temp_path)
-    img = cv2.imread(temp_path)
+    img = bytes_to_numpy_image(img_bytes)
     if img is None:
-        os.remove(temp_path)
         return jsonify({"success": False, "message": "Invalid image file"}), 400
 
-    frs = FaceRecognitionSystem()
-    encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
-    if not encoding_result.get("success") or encoding_result.get("encoding") is None:
-        os.remove(temp_path)
+    # ML backend: handles saving cropped face to DB and creating encoding
+    reg_result = register_face_backend(student_id=student_id, image=img)
+    if not reg_result.get("success"):
         return jsonify({
             "success": False,
-            "message": encoding_result.get("message", "Failed to register face")
+            "message": reg_result.get("message", "Failed to register face")
         })
 
-    # Save face encoding and image to Student DB
+    # Save face encoding and processed face_image to Student DB
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
-        os.remove(temp_path)
         return jsonify({"success": False, "message": "Student not found"}), 404
 
-    student.face_encoding = encoding_result["encoding"]  # Should be a list of floats (ARRAY or JSON)
-    # --- EDIT: Save photo as binary (BLOB)
-    student.face_image = img_bytes
+    student.face_encoding = reg_result["encoding"]
+    # Save the **preprocessed* image to DB as binary (cropped clean face)
+    preprocessed = reg_result.get("preprocessed", img)
+    _, buf = cv2.imencode('.jpg', preprocessed)
+    student.face_image = buf.tobytes()
     db.session.commit()
 
-    # Save cropped/processed face image to stored_images/ (optional for debug)
-    processed = encoding_result.get("preprocessed", img)
-    images_dir = os.path.join(os.getcwd(), 'stored_images')
-    os.makedirs(images_dir, exist_ok=True)
-    image_path = os.path.join(images_dir, f"{student_id}.jpg")
-    cv2.imwrite(image_path, processed)
-
-    os.remove(temp_path)
     return jsonify({"success": True, "message": "Face successfully registered and saved."})

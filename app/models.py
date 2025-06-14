@@ -2,14 +2,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import validates
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy import Float
+from sqlalchemy import Float, LargeBinary
 import re
 import json
 from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 import logging
 from app import db, bcrypt
-from sqlalchemy import LargeBinary
+import numpy as np
+import cv2
+
 
 # Configure logging
 logging.basicConfig(
@@ -26,6 +28,16 @@ student_courses = db.Table(
     db.Column('student_id', db.String(11), db.ForeignKey('student.student_id'), primary_key=True),
     db.Column('course_id', db.Integer, db.ForeignKey('course.course_id'), primary_key=True)
 )
+
+def bytes_to_numpy_image(image_bytes):
+    """
+    Helper to decode JPEG face image from DB (blob) to numpy array for OpenCV/ML.
+    """
+    if not image_bytes:
+        return None
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return img
 
 # Student model
 class Student(db.Model):
@@ -74,6 +86,28 @@ class Student(db.Model):
         if not re.match(r"^\d{11}$", student_id):
             raise ValueError("Student ID must be exactly 11 digits long.")
         return student_id
+    
+    @property
+    def face_image_np(self):
+        """
+        Get numpy array representation of the stored face image from DB.
+        Returns None if no image present.
+        """
+        return bytes_to_numpy_image(self.face_image)
+
+    # Optionally, helper to store numpy array as JPEG into DB for this instance:
+    def set_face_image_from_np(self, img_array):
+        """
+        Saves a numpy array (BGR image) as JPEG bytes in DB.
+        """
+        if img_array is None:
+            self.face_image = None
+        else:
+            success, buf = cv2.imencode('.jpg', img_array)
+            if success:
+                self.face_image = buf.tobytes()
+            else:
+                raise ValueError("Could not encode image to JPEG for database storage.")
 
 # Teacher model
 class Teacher(db.Model):

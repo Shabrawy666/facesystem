@@ -1,6 +1,8 @@
 import os
 import cv2
 import numpy as np
+from sqlalchemy.orm.exc import NoResultFound
+from app.models import Student, bytes_to_numpy_image  # Use imported helper from models.py
 
 from core.models.face_recognition import FaceRecognitionSystem
 from core.models.liveness_detection import LivenessDetector
@@ -29,28 +31,24 @@ def get_liveness_system():
     return _liveness
 
 # --- Face Verification for Attendance ---
-def verify_attendance_backend(student_id: str, file_path: str = None, img_bytes: bytes = None):
+
+def verify_attendance_backend(student_id: str, image: np.ndarray = None, file_path: str = None):
     """
     Main backend API for verifying attendance using student's uploaded image.
     - Checks liveness and face match.
     - Returns verification/dict result.
     """
-    if file_path:
-        image = cv2.imread(file_path)
-        if image is None and img_bytes is not None:
-            npimg = np.frombuffer(img_bytes, np.uint8)
-            image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-    elif img_bytes:
-        npimg = np.frombuffer(img_bytes, np.uint8)
-        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    if image is not None:   # Web upload or DB-to-numpy
+        img = image
+    elif file_path is not None:
+        img = cv2.imread(file_path)
     else:
-        return {"success": False, "message": "No image provided!"}
-
-    if image is None:
+        return {"success": False, "message": "No image data provided."}
+    if img is None:
         return {"success": False, "message": "Failed to load image"}
 
     frs = get_face_system()
-    result = frs.verify_student(student_id, image)
+    result = frs.verify_student(student_id, img)
     data = getattr(result, "data", {}) or {}
     return {
         "success": getattr(result, "success", False),
@@ -62,27 +60,40 @@ def verify_attendance_backend(student_id: str, file_path: str = None, img_bytes:
         "verification_time": getattr(result, "verification_time", None)
     }
 
-# --- Student Face Registration (API) ---
-def register_face_backend(student_id: str, file_path: str = None, img_bytes: bytes = None):
+def verify_attendance_from_db(student_id: str, captured_img: np.ndarray):
     """
-    Register a new face: processes and encodes the submitted image, saves encoding to DB and the cropped image file.
+    Verifies a submitted image (from web) against the student's reference face image stored in the database.
+    Returns full comparison result.
+    """
+    try:
+        student = Student.query.filter_by(student_id=student_id).one()
+    except NoResultFound:
+        return {"success": False, "message": "Student not found."}
+
+    if not student.face_image:
+        return {"success": False, "message": "No stored face image in DB for this student."}
+
+    # Reference image = from DB, captured_img = from user/web
+    reference_img = bytes_to_numpy_image(student.face_image)
+    if reference_img is None:
+        return {"success": False, "message": "Stored facial image is corrupted or unreadable."}
+
+    frs = get_face_system()
+    result = frs.verify_student_images(stored_image=reference_img, captured_image=captured_img)
+    return result
+
+# --- Student Face Registration (API) ---
+def register_face_backend(student_id: str, image: np.ndarray = None, file_path: str = None):
+    """
+    Register a new face: processes and encodes the submitted image, saves encoding and cropped face to DB.
     Returns: {success, encoding, message}
     """
-    img = cv2.imread(file_path)
-    if img is None:
-        return {"success": False, "message": "Failed to load image"}
-    
-    if file_path:
+    if image is not None:
+        img = image
+    elif file_path is not None:
         img = cv2.imread(file_path)
-        with open(file_path, "rb") as f:
-            img_bytes_local = f.read()
-    elif img_bytes:
-        # Decode from bytes in DB
-        npimg = np.frombuffer(img_bytes, np.uint8)
-        img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-        img_bytes_local = img_bytes
     else:
-        return {"success": False, "message": "No image provided."}
+        return {"success": False, "message": "No image data provided."}
     if img is None:
         return {"success": False, "message": "Failed to load image"}
 
@@ -93,57 +104,92 @@ def register_face_backend(student_id: str, file_path: str = None, img_bytes: byt
             "success": False,
             "message": encoding_result.get("message", "Failed to register face")
         }
-    
 
-    from app.models import Student, db
-    student = Student.query.filter_by(student_id=student_id).first()
-    if student:
-        student.face_encoding = encoding_result["encoding"]
-        student.face_image = img_bytes_local
-        db.session.commit()
-
+    # Save processed/cropped face image as JPEG to DB (replace disk saving!)
     processed = encoding_result.get("preprocessed", img)
-    # Save cropped/processed face image
-    os.makedirs(STORED_IMAGES_DIR, exist_ok=True)
-    image_path = os.path.join(STORED_IMAGES_DIR, f"{student_id}.jpg")
-    cv2.imwrite(image_path, processed)
+    try:
+        student = Student.query.filter_by(student_id=student_id).one()
+    except NoResultFound:
+        return {
+            "success": False,
+            "message": "Student not found in DB"
+        }
+    # Encode processed (cropped/enhanced face) as JPEG for DB storage
+    success, face_buf = cv2.imencode('.jpg', processed)
+    if not success:
+        return {
+            "success": False,
+            "message": "Failed to encode cropped face for DB storage."
+        }
+    student.face_image = face_buf.tobytes()
+    from app import db
+    db.session.commit()
+
+    # (optional) Also store/overwrite face_encoding in DB for quick retrieval, if using single encoding.
+    student.face_encoding = encoding_result.get("encoding")
+    db.session.commit()
 
     return {
         "success": True,
         "encoding": encoding_result.get("encoding"),
-        "message": "Face registered and saved.",
-        "face_quality": encoding_result.get("quality_score"),
-        "image_path": image_path
+        "message": "Face registered and saved in DB.",
+        "face_quality": encoding_result.get("quality_score")
     }
 
 # --- Liveness Detection (standalone, for testing) ---
-def run_liveness_detection(file_path: str):
-    img = cv2.imread(file_path)
+def run_liveness_detection(student_id: str = None, image: np.ndarray = None, file_path: str = None):
+    '''
+    You can test liveness for a given student (from DB) or on an uploaded/test image.
+    '''
+    if student_id:
+        student = Student.query.filter_by(student_id=student_id).first()
+        if not student or not student.face_image:
+            return {"success": False, "message": "Student face image not found in DB."}
+        img = bytes_to_numpy_image(student.face_image)
+    elif image is not None:
+        img = image
+    elif file_path is not None:
+        img = cv2.imread(file_path)
+    else:
+        return {"success": False, "message": "No student_id or image data provided."}
     if img is None:
-        return {"success": False, "message": "Invalid image"}
+        return {"success": False, "message": "Failed to load/process image"}
     liveness = get_liveness_system()
     result = liveness.analyze(img)
     return dict(result)
 
 # --- Image Preprocessing (standalone, for diagnostics/debug) ---
-def preprocess_face_image(file_path: str):
-    img = cv2.imread(file_path)
+def preprocess_face_image(student_id: str = None, image: np.ndarray = None, file_path: str = None):
+    if student_id:
+        student = Student.query.filter_by(student_id=student_id).first()
+        if not student or not student.face_image:
+            return {"success": False, "message": "Student face image not found in DB."}
+        img = bytes_to_numpy_image(student.face_image)
+    elif image is not None:
+        img = image
+    elif file_path is not None:
+        img = cv2.imread(file_path)
+    else:
+        return {"success": False, "message": "No student_id or image data provided."}
     if img is None:
-        return None
+        return {"success": False, "message": "Failed to load/process image"}
     return ImagePreprocessor.preprocess_image(img)
 
 # --- Batch Verification (for admin/testing, e.g., for analytics) ---
 def batch_verify_images(image_data_list):
     """
-    image_data_list: [{"student_id": ..., "file_path": ...}, ...]
+    image_data_list: [{"student_id": ..., "image": ...}, ...]
+    "image" can be a numpy array (from upload or DB).
     Returns: list of result dicts (verdict, scores)
     """
     frs = get_face_system()
     results = []
     for entry in image_data_list:
         student_id = entry.get("student_id")
-        path = entry.get("file_path")
-        img = cv2.imread(path)
+        file_path = entry.get("file_path")
+        img = entry.get("image")
+        if not img and file_path:
+            img = cv2.imread(file_path)
         if not student_id or img is None:
             results.append({"student_id": student_id, "success": False, "message": "Missing student or image"})
             continue
@@ -164,6 +210,7 @@ def get_system_info():
 
 __all__ = [
     "verify_attendance_backend",
+    "verify_attendance_from_db",
     "register_face_backend",
     "run_liveness_detection",
     "preprocess_face_image",
