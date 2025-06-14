@@ -190,8 +190,11 @@ def student_register_face():
     else:
         print("Loaded img.shape:", img.shape)
 
+    print("About to run face recognition and liveness...")
     frs = FaceRecognitionSystem()
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
+    print("Encoding result:", encoding_result)
+
     if not encoding_result.get("success") or encoding_result.get("encoding") is None:
         os.remove(temp_path)
         print("Face encoding failed:", encoding_result.get("message"))
@@ -201,20 +204,27 @@ def student_register_face():
         })
 
     student = Student.query.filter_by(student_id=student_id).first()
+    print("Student DB lookup result:", student)
     if not student:
         os.remove(temp_path)
         print("No student found in DB")
         return jsonify({"success": False, "message": "Student not found"}), 404
 
-    student.face_encoding = encoding_result["encoding"]
-    db.session.commit()
+    student.face_encoding = encoding_result["encoding"]  # ...
+    try:
+        db.session.commit()
+        print("DB commit successful!")
+    except Exception as e:
+        print("DB commit error:", str(e))
+        raise
 
     processed = encoding_result.get("preprocessed", img)
     images_dir = os.path.join(os.getcwd(), 'stored_images')
     os.makedirs(images_dir, exist_ok=True)
     image_path = os.path.join(images_dir, f"{student_id}.jpg")
     print("Saving processed face to:", image_path)
-    cv2.imwrite(image_path, processed)
+    success = cv2.imwrite(image_path, processed)
+    print("cv2.imwrite success:", success)
 
     os.remove(temp_path)
     print("Registration success for:", student_id)
