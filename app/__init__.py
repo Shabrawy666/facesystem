@@ -35,8 +35,7 @@ def create_app():
     app.register_blueprint(student_bp)
 
     from app.ml_backend import sync_db_encodings_to_frs
-    @app.before_first_request
-    def run_sync_db_to_frs():
+    with app.app_context():
         sync_db_encodings_to_frs()
 
     return app
