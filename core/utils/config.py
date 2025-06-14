@@ -8,13 +8,13 @@ class Config:
     FACE_RECOGNITION_THRESHOLD = 0.4
     IMAGE_SIZE = (224, 224)
 
-    # Always use project root, not process cwd
+    # Project root for paths
     PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Image Storage Paths (safe, reliable, always in project)
+    # Use env var override if present, default to Fly.io mount or project folder
+    STORED_IMAGES_DIR = os.environ.get('STORED_IMAGES_DIR', '/app/stored_images')
     TEMP_IMAGE_DIR = os.path.join(PROJECT_ROOT, "temp_images")
-    STORED_IMAGES_DIR = os.path.join(PROJECT_ROOT, "stored_images")
 
-    # Logging Settings
+    # Logging
     LOG_FILE = os.path.join(PROJECT_ROOT, "facial_recognition.log")
     LOG_LEVEL = "INFO"

@@ -132,27 +132,6 @@ def batch_verify_images(image_data_list):
 def get_system_info():
     return get_face_system().get_system_info()
 
-def sync_db_encodings_to_frs():
-    """
-    Sync all student DB encodings into the FaceRecognitionSystem's multiple_encodings at app startup.
-    Safely parses string or list formats. Should be called after app/db init.
-    """
-    frs = get_face_system()
-    from app.models import Student
-    from app import db
-    students = Student.query.filter(Student.face_encoding.isnot(None)).all()
-    for student in students:
-        if student.face_encoding:
-            # Parse string (CSV) or list from DB
-            if isinstance(student.face_encoding, str):
-                encoding = [float(x) for x in student.face_encoding.split(",")]
-            else:
-                encoding = student.face_encoding
-            # Prevent duplicate addition
-            if student.student_id not in frs.multiple_encodings or not frs.multiple_encodings[student.student_id]:
-                frs._add_multiple_encoding(student.student_id, encoding, 0.7)
-    frs._save_multiple_encodings()
-
 __all__ = [
     "verify_attendance_backend",
     "register_face_backend",
@@ -160,5 +139,4 @@ __all__ = [
     "preprocess_face_image",
     "batch_verify_images",
     "get_system_info",
-    "sync_db_encodings_to_frs",
-]
+    ]

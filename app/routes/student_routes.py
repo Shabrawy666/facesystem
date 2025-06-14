@@ -123,7 +123,7 @@ def student_register_face():
         os.remove(temp_path)
         return jsonify({"success": False, "message": "Invalid image file"}), 400
 
-    # Register face via ML code
+    # Register face via ML code (extract embedding from the image)
     frs = FaceRecognitionSystem()
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
     if not encoding_result.get("success") or encoding_result.get("encoding") is None:
@@ -133,17 +133,15 @@ def student_register_face():
             "message": encoding_result.get("message", "Failed to register face")
         })
 
-    # Save face encoding to student record
+    # Save face encoding to student record (ARRAY(Float), not used for verification)
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         os.remove(temp_path)
         return jsonify({"success": False, "message": "Student not found"}), 404
-    student.face_encoding = encoding_result["encoding"]  # typically a list/array
-    frs._add_multiple_encoding(student_id, encoding_result["encoding"], encoding_result.get("quality_score", 0.6))
-    frs._save_multiple_encodings()
+    student.face_encoding = encoding_result["encoding"]  # FLOAT ARRAY
     db.session.commit()
 
-    # Save processed face image for dashboard/history
+    # Save processed face image (this is the ONLY source for recognition!)
     processed = encoding_result.get("preprocessed", img)
     images_dir = Config.STORED_IMAGES_DIR
     os.makedirs(images_dir, exist_ok=True)
@@ -151,7 +149,7 @@ def student_register_face():
     cv2.imwrite(image_path, processed)
     os.remove(temp_path)
 
-    # Return same "logged in" payload as if already registered
+    # Return login payload
     access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
     registered_courses = [
         {"course_id": course.course_id, "course_name": course.course_name}
