@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 import logging
 from app import db, bcrypt
+from sqlalchemy import LargeBinary
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +33,7 @@ class Student(db.Model):
     name = db.Column(db.String(255), nullable=False)
     _password = db.Column("password", db.String(255), nullable=False)
     face_encoding = db.Column(ARRAY(Float), nullable=True)
+    face_image = db.Column(db.LargeBinary)
     email = db.Column(db.String(255), unique=True, nullable=False)
 
     # Many-to-many relationship with Course

@@ -175,7 +175,9 @@ def student_register_face():
     if not file:
         return jsonify({"success": False, "message": "Image file required"}), 400
 
-    # Save image temporarily
+    # --- EDIT: Save image bytes to DB for future decode/use
+    img_bytes = file.read()
+    file.seek(0)  # Reset file pointer for cv2.imread
     temp_path = f"/tmp/regface_{student_id}.jpg"
     file.save(temp_path)
     img = cv2.imread(temp_path)
@@ -192,16 +194,18 @@ def student_register_face():
             "message": encoding_result.get("message", "Failed to register face")
         })
 
-    # Save face encoding to Student DB
+    # Save face encoding and image to Student DB
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         os.remove(temp_path)
         return jsonify({"success": False, "message": "Student not found"}), 404
 
-    student.face_encoding = encoding_result["encoding"]  # Should be list of floats (ARRAY in Postgres)
+    student.face_encoding = encoding_result["encoding"]  # Should be a list of floats (ARRAY or JSON)
+    # --- EDIT: Save photo as binary (BLOB)
+    student.face_image = img_bytes
     db.session.commit()
 
-    # Save cropped/processed face image to stored_images/
+    # Save cropped/processed face image to stored_images/ (optional for debug)
     processed = encoding_result.get("preprocessed", img)
     images_dir = os.path.join(os.getcwd(), 'stored_images')
     os.makedirs(images_dir, exist_ok=True)

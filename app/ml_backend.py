@@ -29,13 +29,23 @@ def get_liveness_system():
     return _liveness
 
 # --- Face Verification for Attendance ---
-def verify_attendance_backend(student_id: str, file_path: str):
+def verify_attendance_backend(student_id: str, file_path: str = None, img_bytes: bytes = None):
     """
     Main backend API for verifying attendance using student's uploaded image.
     - Checks liveness and face match.
     - Returns verification/dict result.
     """
-    image = cv2.imread(file_path)
+    if file_path:
+        image = cv2.imread(file_path)
+        if image is None and img_bytes is not None:
+            npimg = np.frombuffer(img_bytes, np.uint8)
+            image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    elif img_bytes:
+        npimg = np.frombuffer(img_bytes, np.uint8)
+        image = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    else:
+        return {"success": False, "message": "No image provided!"}
+
     if image is None:
         return {"success": False, "message": "Failed to load image"}
 
@@ -53,12 +63,26 @@ def verify_attendance_backend(student_id: str, file_path: str):
     }
 
 # --- Student Face Registration (API) ---
-def register_face_backend(student_id: str, file_path: str):
+def register_face_backend(student_id: str, file_path: str = None, img_bytes: bytes = None):
     """
     Register a new face: processes and encodes the submitted image, saves encoding to DB and the cropped image file.
     Returns: {success, encoding, message}
     """
     img = cv2.imread(file_path)
+    if img is None:
+        return {"success": False, "message": "Failed to load image"}
+    
+    if file_path:
+        img = cv2.imread(file_path)
+        with open(file_path, "rb") as f:
+            img_bytes_local = f.read()
+    elif img_bytes:
+        # Decode from bytes in DB
+        npimg = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+        img_bytes_local = img_bytes
+    else:
+        return {"success": False, "message": "No image provided."}
     if img is None:
         return {"success": False, "message": "Failed to load image"}
 
@@ -69,6 +93,14 @@ def register_face_backend(student_id: str, file_path: str):
             "success": False,
             "message": encoding_result.get("message", "Failed to register face")
         }
+    
+
+    from app.models import Student, db
+    student = Student.query.filter_by(student_id=student_id).first()
+    if student:
+        student.face_encoding = encoding_result["encoding"]
+        student.face_image = img_bytes_local
+        db.session.commit()
 
     processed = encoding_result.get("preprocessed", img)
     # Save cropped/processed face image
