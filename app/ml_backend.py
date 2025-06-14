@@ -79,7 +79,7 @@ def verify_attendance_from_db(student_id: str, captured_img: np.ndarray):
         return {"success": False, "message": "Stored facial image is corrupted or unreadable."}
 
     frs = get_face_system()
-    result = frs.verify_student_images(stored_image=reference_img, captured_image=captured_img)
+    result = frs.verify_student(stored_image=reference_img, captured_image=captured_img)
     return result
 
 # --- Student Face Registration (API) ---
