@@ -266,15 +266,13 @@ class FaceRecognitionSystem:
             # Defensive: parse stored_repr into a list of floats if it is a string
             parsed_encodings = []
             if stored_repr is not None:
-                if isinstance(stored_repr, str):
-                    parsed_encodings = [[float(x) for x in stored_repr.split(',')]]
-                elif isinstance(stored_repr, (np.ndarray, list, tuple)):
-                    # Could be a single encoding or list of encodings
-                    first = stored_repr[0] if isinstance(stored_repr, (list, tuple)) and len(stored_repr) and isinstance(stored_repr[0], (list, np.ndarray)) else stored_repr
-                    # We always want [encoding] format for single encoding
-                    parsed_encodings = [list(first)] if isinstance(first, (np.ndarray, list, tuple)) else [list(stored_repr)]
-                elif isinstance(stored_repr, dict) and "embedding" in stored_repr:
+                # stored_repr can be [{'embedding': ...}] or similar
+                if isinstance(stored_repr, dict) and "embedding" in stored_repr:
                     parsed_encodings = [stored_repr["embedding"]]
+                elif isinstance(stored_repr, list) and len(stored_repr) and isinstance(stored_repr[0], dict) and "embedding" in stored_repr[0]:
+                    parsed_encodings = [stored_repr[0]["embedding"]]
+                elif isinstance(stored_repr, (np.ndarray, list, tuple)) and len(stored_repr) == 128:
+                    parsed_encodings = [list(stored_repr)]
             print(f"[Verify] parsed_encodings:", parsed_encodings)
 
             if not parsed_encodings and not multiple_encodings:
@@ -326,8 +324,16 @@ class FaceRecognitionSystem:
             print(f"[Verify] all_encs for comparison:", all_encs)
             weights = self.encoding_weights.get(student_id, [1.0] * len(all_encs))
             similarities = []
+            def ensure_vec(e):
+                # e can be a list (vector) or dict (with 'embedding')
+                if isinstance(e, dict) and "embedding" in e:
+                    return e["embedding"]
+                elif isinstance(e, list) and len(e) == 1 and isinstance(e[0], dict) and "embedding" in e[0]:
+                    return e[0]["embedding"]
+                return e
+
             for emb, weight in zip(all_encs, weights):
-                embedding = np.array(emb)
+                embedding = np.array(ensure_vec(emb))
                 similarity = self._calculate_similarity(captured_embedding, embedding)
                 weighted_similarity = similarity * weight
                 similarities.append(weighted_similarity)
