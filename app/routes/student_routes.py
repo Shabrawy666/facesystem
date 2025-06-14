@@ -147,6 +147,7 @@ def student_register_face():
     os.makedirs(images_dir, exist_ok=True)
     image_path = os.path.join(images_dir, f"{student_id}.jpg")
     cv2.imwrite(image_path, processed)
+    print(f"[Register Face] Saved cropped face to: {image_path}")
     os.remove(temp_path)
 
     # Return login payload
