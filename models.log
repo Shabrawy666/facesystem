@@ -476,3 +476,9 @@
 
 2025-06-15 12:19:16,257 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
 
+2025-06-15 13:30:51,866 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-15 13:31:38,350 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-15 13:32:05,493 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
