@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
-from app.ml_backend.wifi_verification_system import WifiVerificationSystem
+from app.ml_back.wifi_verification_system import WifiVerificationSystem
 
 teacher_bp = Blueprint('teacher', __name__)
 wifi_verification_system = WifiVerificationSystem()
