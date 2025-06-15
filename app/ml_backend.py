@@ -19,83 +19,38 @@ _system = None
 _liveness = None
 
 def get_face_system():
-    """
-    Returns a singleton instance of FaceRecognitionSystem.
-    """
     global _system
     if _system is None:
         _system = FaceRecognitionSystem()
     return _system
 
 def get_liveness_system():
-    """
-    Returns a singleton instance of LivenessDetector.
-    """
     global _liveness
     if _liveness is None:
         _liveness = LivenessDetector()
     return _liveness
 
-# --- Face Verification for Attendance ---
-def verify_attendance_backend(student_id: str, file_path: str):
-    """
-    Main backend API for verifying attendance using student's uploaded image.
-    - Checks liveness and face match.
-    - Returns verification dict result.
-    """
-    image = cv2.imread(file_path)
-    if image is None:
-        return {"success": False, "message": "Failed to load image"}
-    
-    print("VERIFY: img shape", image.shape, "sum", np.sum(image))
-
-    frs = get_face_system()
-    # Multi-encoding support is native in FaceRecognitionSystem.verify_student
-    result = frs.verify_student(student_id, image)
-    data = getattr(result, "data", {}) or {}
-    # Print all compared encoding sums for debug
-    if hasattr(frs, "multiple_encodings"):
-        enc_list = frs.multiple_encodings.get(student_id, [])
-        print("VERIFY: student has", len(enc_list), "encodings")
-        for idx, enc in enumerate(enc_list):
-            print(f"VERIFY: encoding {idx+1} sum", np.sum(enc))
-    return {
-        "success": getattr(result, "success", False),
-        "confidence_score": getattr(result, "confidence_score", 0.0),
-        "message": getattr(result, "error_message", "Verification successful") if not getattr(result, "success", False) else "Verification successful",
-        "liveness_score": data.get("liveness_score"),
-        "distance": data.get("distance"),
-        "threshold_used": data.get("threshold_used"),
-        "verification_time": getattr(result, "verification_time", None),
-        # Optionally include other details for debugging/frontend
-        "encodings_compared": data.get("encodings_compared"),
-    }
-
 # --- Student Face Registration (API) ---
 def register_face_backend(student_id: str, file_path: str):
     """
-    Register a new face: processes and encodes the submitted image, saves encoding to DB and the cropped image file.
-    Returns: {success, encoding, message}
+    Register a new face: processes and encodes the submitted image, returns encoding to be saved in DB.
     """
     img = cv2.imread(file_path)
     if img is None:
         return {"success": False, "message": "Failed to load image"}
     
     print("REGISTER: img shape", img.shape, "sum", np.sum(img))
-
     frs = get_face_system()
-    # Multi-encoding registration is handled in FaceRecognitionSystem.get_face_encoding_for_storage
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
     if not encoding_result.get("success") or encoding_result.get("encoding") is None:
         return {
             "success": False,
             "message": encoding_result.get("message", "Failed to register face")
         }
-    
     print("REGISTER: encoding sum", np.sum(encoding_result["encoding"]))
 
     processed = encoding_result.get("preprocessed", img)
-    # Save cropped/processed face image (latest for this student)
+    # Save cropped/processed face image for diagnostics or admin review
     os.makedirs(STORED_IMAGES_DIR, exist_ok=True)
     image_path = os.path.join(STORED_IMAGES_DIR, f"{student_id}.jpg")
     cv2.imwrite(image_path, processed)
@@ -110,10 +65,6 @@ def register_face_backend(student_id: str, file_path: str):
 
 # --- Multi-image Registration (API utility) ---
 def register_faces_backend(student_id: str, file_paths: list):
-    """
-    Register multiple faces: processes and encodes each submitted image, saves all encodings for student.
-    Returns: {success, encodings, messages}
-    """
     frs = get_face_system()
     encodings = []
     messages = []
@@ -160,48 +111,17 @@ def preprocess_face_image(file_path: str):
         return None
     return ImagePreprocessor.preprocess_image(img)
 
-# --- Batch Verification (for admin/testing, e.g., for analytics) ---
-def batch_verify_images(image_data_list):
-    """
-    image_data_list: [{"student_id": ..., "file_path": ...}, ...]
-    Returns: list of result dicts (verdict, scores)
-    """
-    frs = get_face_system()
-    results = []
-    for entry in image_data_list:
-        student_id = entry.get("student_id")
-        path = entry.get("file_path")
-        img = cv2.imread(path)
-        if not student_id or img is None:
-            results.append({"student_id": student_id, "success": False, "message": "Missing student or image"})
-            continue
-        res = frs.verify_student(student_id, img)
-        data = getattr(res, 'data', {}) or {}
-        results.append({
-            "student_id": student_id,
-            "success": getattr(res, "success", False),
-            "confidence_score": getattr(res, 'confidence_score', 0.0),
-            "liveness_score": data.get("liveness_score"),
-            "message": getattr(res, 'error_message', "Verified") if not getattr(res, "success", False) else "Verified"
-        })
-    return results
-
 # --- System Info ---
 def get_system_info():
-    """
-    Returns system info (can be implemented in FaceRecognitionSystem).
-    """
     sys = get_face_system()
     if hasattr(sys, "get_performance_metrics"):
         return sys.get_performance_metrics()
     return {}
 
 __all__ = [
-    "verify_attendance_backend",
     "register_face_backend",
     "register_faces_backend",
     "run_liveness_detection",
     "preprocess_face_image",
-    "batch_verify_images",
     "get_system_info",
 ]
