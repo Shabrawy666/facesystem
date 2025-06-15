@@ -210,6 +210,9 @@ def student_attend_latest_session(course_id):
     if not wifi_result.get("success"):
         return jsonify(wifi_result), 403
 
+    # Default connection_strength if wifi_result does not have it
+    connection_strength = wifi_result.get("strength_label") or wifi_result.get("connection_strength") or "unknown"
+
     # 3. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
     file.save(temp_path)
@@ -232,6 +235,7 @@ def student_attend_latest_session(course_id):
             log.liveness_score = float(result.get("liveness_score")) if result.get("liveness_score") is not None else None
             log.status = "present"
             log.verification_timestamp = datetime.utcnow()
+            log.connection_strength = connection_strength  # <-- ADD THIS LINE
         else:
             log = Attendancelog(
                 student_id=student_id,
@@ -241,7 +245,8 @@ def student_attend_latest_session(course_id):
                 verification_score=float(result.get("confidence_score")) if result.get("confidence_score") is not None else None,
                 liveness_score=float(result.get("liveness_score")) if result.get("liveness_score") is not None else None,
                 status="present",
-                verification_timestamp=datetime.utcnow()
+                verification_timestamp=datetime.utcnow(),
+                connection_strength=connection_strength  # <-- ADD THIS LINE
             )
             db.session.add(log)
         db.session.commit()
