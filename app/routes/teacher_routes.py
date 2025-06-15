@@ -106,7 +106,6 @@ def course_details(course_id):
         "students": student_list
     })
 
-# ---- START SESSION ----
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/start', methods=['POST'])
 @jwt_required()
 def start_session(course_id):
@@ -119,9 +118,10 @@ def start_session(course_id):
 
     from datetime import datetime
     sn = 1 + AttendanceSession.query.filter_by(course_id=course_id).count()
-    wifi_ssid = (request.json or {}).get('wifi_ssid') or request.form.get('wifi_ssid')
-    if not wifi_ssid:
-        return jsonify({"message": "WiFi SSID required"}), 400
+    # REMOVE THE REQUIREMENT FOR WIFI_SSID
+    # wifi_ssid = (request.json or {}).get('wifi_ssid') or request.form.get('wifi_ssid')
+    # if not wifi_ssid:
+    #     return jsonify({"message": "WiFi SSID required"}), 400
 
     session = AttendanceSession(
         session_number=sn,
@@ -129,7 +129,7 @@ def start_session(course_id):
         course_id=course_id,
         start_time=datetime.utcnow(),
         is_active=True,
-        wifi_ssid=wifi_ssid,
+        wifi_ssid=None,  # Set to None or remove this line if your model allows
         ip_address=request.remote_addr,
         status="active"
     )
@@ -140,7 +140,7 @@ def start_session(course_id):
     wifi_verification_system.create_session(
         teacher_id=teacher_id,
         hall_id=str(course_id),
-        wifi_ssid=wifi_ssid,
+        wifi_ssid=None,  # Pass None since it's no longer needed
         teacher_ip=request.remote_addr,
         session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
     )
