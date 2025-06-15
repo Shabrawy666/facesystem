@@ -205,6 +205,9 @@ def student_attend_latest_session(course_id):
     if not wifi_result.get("success"):
         return jsonify(wifi_result), 403
 
+    # Use connection_strength from wifi_result or default to "unknown"
+    connection_strength = wifi_result.get("connection_strength", "unknown")
+
     # 3. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
     file.save(temp_path)
@@ -271,7 +274,8 @@ def student_attend_latest_session(course_id):
                     teacher_id=course.teacher_id,
                     verification_score=float(best_similarity),
                     status="present",
-                    verification_timestamp=datetime.utcnow()
+                    verification_timestamp=datetime.utcnow(),
+                    connection_strength=connection_strength  # <-- ADD THIS LINE
                 )
                 db.session.add(log)
             db.session.commit()
