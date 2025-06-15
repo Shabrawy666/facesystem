@@ -129,8 +129,8 @@ def start_session(course_id):
         course_id=course_id,
         start_time=datetime.utcnow(),
         is_active=True,
-        wifi_ssid=None,  # Set to None or remove this line if your model allows
         ip_address=request.remote_addr,
+        teacher_ip=request.remote_addr,  # This is your new column!
         status="active"
     )
     db.session.add(session)
