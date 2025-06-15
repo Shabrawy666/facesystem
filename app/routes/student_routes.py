@@ -12,6 +12,7 @@ from dataclasses import asdict, is_dataclass
 from app.ml_backend import register_face_backend
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
 from core.models.face_recognition import FaceRecognitionSystem
+from sqlalchemy.orm.attributes import flag_modified
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -144,6 +145,8 @@ def student_register_face():
         student.face_encodings.append(new_encoding)
     else:
         student.face_encodings = [new_encoding]
+
+    flag_modified(student, 'face_encodings')
 
     db.session.commit()
 
