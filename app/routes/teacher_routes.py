@@ -148,12 +148,23 @@ def end_session(course_id):
     session = AttendanceSession.query.filter_by(course_id=course_id, is_active=True, teacher_id=teacher_id).first()
     if not session:
         return jsonify({"message": "No open session found"}), 404
+
+    # Set end time and status
     from datetime import datetime
     session.end_time = datetime.utcnow()
     session.is_active = False
     session.status = "completed"
-    db.session.commit()
 
+    # Mark all students who haven't attended as absent
+    course = Course.query.get(course_id)
+    attended_student_ids = {log.student_id for log in Attendancelog.query.filter_by(session_id=session.id, course_id=course_id).all()}
+    for student in course.enrolled_students:
+        if student.student_id not in attended_student_ids:
+            absent_log = Attendancelog(session_id=session.id, course_id=course_id, student_id=student.student_id,
+                                       teacher_id=teacher_id, status="absent")
+            db.session.add(absent_log)
+
+    db.session.commit()
     return jsonify({"success": True})
 
 
@@ -195,34 +206,37 @@ def session_attendance(course_id, session_id):
 
 
 # ---- MANUAL EDIT ATTENDANCE (requires course and session) ----
-@teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance', methods=['PUT'])
+@teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance/toggle', methods=['PUT'])
 @jwt_required()
-def edit_attendance(course_id, session_id):
+def toggle_attendance(course_id, session_id):
     teacher_id = get_jwt_identity()
     if not is_teacher_of_course(teacher_id, course_id):
         return jsonify({"message": "Access denied"}), 403
+
     session = AttendanceSession.query.filter_by(id=session_id, course_id=course_id, teacher_id=teacher_id).first()
     if not session:
         return jsonify({"message": "Session not found"}), 404
-    data = request.json.get('attendance', [])
-    for entry in data:
-        sid = entry.get('student_id')
-        status = entry.get('status')
-        if not sid or not status or status not in ["present", "absent"]:
-            continue
-        log = Attendancelog.query.filter_by(session_id=session_id, course_id=course_id, student_id=sid).first()
-        if log:
-            log.status = status
-        else:
-            # If flipping to present, create log
-            if status == "present":
-                newlog = Attendancelog(
-                    session_id=session_id,
-                    course_id=course_id,
-                    student_id=sid,
-                    teacher_id=teacher_id,
-                    status="present"
-                )
-                db.session.add(newlog)
+
+    student_id = request.json.get('student_id')
+    if not student_id:
+        return jsonify({"message": "student_id is required"}), 400
+
+    # Find the student in this course
+    course = Course.query.get(course_id)
+    student = next((s for s in course.enrolled_students if s.student_id == student_id), None)
+    if not student:
+        return jsonify({"message": "Student not in this course"}), 404
+
+    log = Attendancelog.query.filter_by(session_id=session_id, course_id=course_id, student_id=student_id).first()
+    if log:
+        # Toggle
+        old_status = log.status
+        log.status = "absent" if log.status == "present" else "present"
+    else:
+        # If no log yet, means absent; create as present
+        log = Attendancelog(session_id=session_id, course_id=course_id, student_id=student_id,
+                            teacher_id=teacher_id, status="present")
+        db.session.add(log)
+        old_status = "absent"
     db.session.commit()
-    return jsonify({"success": True})
+    return jsonify({"success": True, "from_status": old_status, "to_status": log.status})
