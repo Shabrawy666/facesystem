@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
-from core.session.wifi_verification import WifiVerificationSystem
+from app.ml_backend.wifi_verification_system import WifiVerificationSystem
 
 teacher_bp = Blueprint('teacher', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -136,14 +136,14 @@ def start_session(course_id):
     db.session.add(session)
     db.session.commit()
 
-    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    # ---- NEW: Create a persistent WifiSession for verification ----
     wifi_verification_system.create_session(
         teacher_id=teacher_id,
         hall_id=str(course_id),
         wifi_ssid=wifi_ssid,
-        teacher_ip=request.remote_addr
+        teacher_ip=request.remote_addr,
+        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
     )
-    print("TEACHER: Created session_id:", session_id)
 
     return jsonify({"success": True, "session_id": session.id})
 
@@ -163,10 +163,14 @@ def end_session(course_id):
     session.status = "completed"
     db.session.commit()
 
-    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
-    wifi_verification_system.end_session(session_id, teacher_id)
+    # ---- NEW: End the persistent WifiSession ----
+    wifi_verification_system.end_session(
+        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}",
+        teacher_id=teacher_id
+    )
 
     return jsonify({"success": True})
+
 
 # ---- VIEW ATTENDANCE (FOR SESSION OF A COURSE) ----
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance', methods=['GET'])

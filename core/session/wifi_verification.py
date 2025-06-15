@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict
 import logging
 from data.structures import WifiSession
+from app.models import WifiSession, db
 
 class WifiVerificationSystem:
     """Handles WiFi verification for attendance system"""

@@ -472,3 +472,7 @@
 2025-06-14 13:21:10,155 - INFO - 127.0.0.1 - - [14/Jun/2025 13:21:10] "POST /student/sessions/7/attend HTTP/1.1" 200 -
 2025-06-14 13:21:24,246 - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\project_root\\app\\routes\\student_routes.py', reloading
 2025-06-14 13:21:26,305 - INFO -  * Restarting with stat
+2025-06-15 12:18:52,112 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-06-15 12:19:16,257 - WARNING - From C:\Users\Lenovo\Desktop\project_root\venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+

@@ -322,3 +322,14 @@ class AttendanceSession(db.Model):
         super(AttendanceSession, self).__init__(**kwargs)
         if not self.start_time:
             self.start_time = datetime.utcnow()
+
+
+class WifiSession(db.Model):
+    __tablename__ = 'wifi_session'
+    session_id = db.Column(db.String(64), primary_key=True)
+    teacher_id = db.Column(db.String(11), db.ForeignKey('teacher.teacher_id'), nullable=False)
+    hall_id = db.Column(db.String, nullable=True)
+    wifi_ssid = db.Column(db.String, nullable=False)
+    teacher_ip = db.Column(db.String(45), nullable=True)
+    start_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)

@@ -11,9 +11,9 @@ from enum import Enum
 from dataclasses import asdict, is_dataclass
 from core.session.wifi_verification import WifiVerificationSystem
 from app.ml_backend import verify_attendance_backend, register_face_backend
+from app.ml_backend.wifi_verification_system import WifiVerificationSystem
 
 student_bp = Blueprint('student', __name__)
-
 wifi_verification_system = WifiVerificationSystem()
 
 def to_json_safe(obj):
@@ -186,11 +186,6 @@ def student_attend_latest_session(course_id):
     if not file:
         return jsonify({"success": False, "message": "Image file required"}), 400
 
-    # Get WiFi data from request
-    wifi_ssid = request.form.get("wifi_ssid") or (request.json or {}).get("wifi_ssid")
-    student_ip = request.form.get("student_ip") or (request.json or {}).get("student_ip")
-    session_id = None
-
     # 1. Get course and check registration
     course = Course.query.get(course_id)
     student = Student.query.get(student_id)
@@ -205,32 +200,25 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    # ---- NEW: WiFi Verification ----
+    wifi_ssid = request.form.get('wifi_ssid')
+    student_ip = request.form.get('student_ip')
+    wifi_result = wifi_verification_system.verify_wifi_connection(
+        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}",
+        student_wifi_ssid=wifi_ssid,
+        student_ip=student_ip
+    )
+    if not wifi_result.get("success"):
+        return jsonify(wifi_result), 403
 
-    print("STUDENT: Attempting WiFi verify with session_id:", session_id)
-
-    # WiFi verification (if data provided)
-    wifi_result = None
-    if wifi_ssid and student_ip:
-        wifi_result = wifi_verification_system.verify_wifi_connection(
-            session_id=session_id,
-            student_id=student_id,
-            student_wifi_data={"ssid": wifi_ssid},
-            student_ip=student_ip
-        )
-        if not wifi_result.get("success"):
-            return jsonify(wifi_result), 403
-
-    # 3. Save image temporarily to /tmp
-    with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_attend_{student_id}_{session.id}.jpg", delete=False) as tmpfile:
-        file.save(tmpfile.name)
-        temp_path = tmpfile.name
+    # 3. Save image temporarily
+    temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
+    file.save(temp_path)
 
     # 4. ML attendance verification
+    from app.ml_backend import verify_attendance_backend
     result = verify_attendance_backend(student_id, temp_path)
     os.remove(temp_path)
-
-    result["wifi_verification"] = wifi_result
 
     # 5. Log attendance if success
     if result and result.get("success"):
