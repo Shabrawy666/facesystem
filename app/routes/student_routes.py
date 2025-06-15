@@ -261,13 +261,14 @@ def student_attend_latest_session(course_id):
             course_id=course_id,
             session_id=session.id
         ).first()
-        if log and log.status != "present":
+        if log:
             log.attempts_count = (log.attempts_count or 1) + 1
             log.last_attempt = now
-            log.status = "attempted"
-            log.connection_strength = "weak"
-            log.verification_timestamp = now
-        elif not log:  # create new
+            if log.status != "present":
+                log.status = "attempted"
+                log.connection_strength = "weak"
+                log.verification_timestamp = now
+        else:
             log = Attendancelog(
                 student_id=student_id,
                 course_id=course_id,
@@ -280,7 +281,6 @@ def student_attend_latest_session(course_id):
                 last_attempt=now,
             )
             db.session.add(log)
-        # If log.status == "present", do nothing (can't downgrade or increment)
         db.session.commit()
         return jsonify({
             "success": False,
@@ -361,7 +361,10 @@ def student_attend_latest_session(course_id):
 
         if verified:
             if log:
+                log.attempts_count = (log.attempts_count or 1) + 1
+                log.last_attempt = now
                 if log.status == "present":
+                    # DO NOT update verification_timestamp, keep as the original successful time!
                     db.session.commit()
                     return jsonify({
                         "success": False,
@@ -370,12 +373,10 @@ def student_attend_latest_session(course_id):
                         "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
                         "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
                     }), 400
-                # Upgrade from attempted to present
+                # Was attempted and now succeeded:
                 log.status = "present"
-                log.attempts_count = (log.attempts_count or 1) + 1
-                log.last_attempt = now
                 log.verification_score = float(best_similarity)
-                log.verification_timestamp = now
+                log.verification_timestamp = now  # update to successful time!
                 log.connection_strength = connection_strength
                 log.liveness_score = liveness_score
             else:
@@ -386,7 +387,7 @@ def student_attend_latest_session(course_id):
                     teacher_id=course.teacher_id,
                     verification_score=float(best_similarity),
                     status="present",
-                    verification_timestamp=now,
+                    verification_timestamp=now,    # set only on success
                     connection_strength=connection_strength,
                     liveness_score=liveness_score,
                     attempts_count=1,
@@ -395,18 +396,19 @@ def student_attend_latest_session(course_id):
                 db.session.add(log)
             db.session.commit()
             return jsonify(result)
+
         else:
-            # Only log as "attempted" (never "present" here, nor downgrade "present" to attempted)
             if log:
+                log.attempts_count = (log.attempts_count or 1) + 1
+                log.last_attempt = now
+                # Never overwrite present, never overwrite verification_timestamp if present
                 if log.status != "present":
-                    log.attempts_count = (log.attempts_count or 1) + 1
-                    log.last_attempt = now
                     log.verification_score = float(best_similarity)
-                    log.verification_timestamp = now
                     log.connection_strength = connection_strength
                     log.liveness_score = liveness_score
                     log.status = "attempted"
-                # If status == present, do nothing
+                    log.verification_timestamp = None  # always null for failed attempts
+                # else: present stays, do not touch its verification_timestamp
             else:
                 log = Attendancelog(
                     student_id=student_id,
@@ -415,7 +417,7 @@ def student_attend_latest_session(course_id):
                     teacher_id=course.teacher_id,
                     verification_score=float(best_similarity),
                     status="attempted",
-                    verification_timestamp=now,
+                    verification_timestamp=None,       # always null for failed attempts
                     connection_strength=connection_strength,
                     liveness_score=liveness_score,
                     attempts_count=1,

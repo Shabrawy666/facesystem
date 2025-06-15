@@ -13,7 +13,7 @@ primary_region = 'cdg'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
   
 [mounts]
@@ -21,7 +21,7 @@ source="storedimages"
 destination="/app/stored_images"
 
 [[vm]]
-  memory = '4gb'
-  cpu_kind = 'shared'
+  memory = '8gb'
+  cpu_kind = "performance"
   cpus = 4
-  memory_mb = 4096
+  memory_mb = 8192
