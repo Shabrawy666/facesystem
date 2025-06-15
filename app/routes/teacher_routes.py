@@ -299,17 +299,44 @@ def get_all_sessions(course_id):
         return jsonify({"message": "Access denied"}), 403
 
     sessions = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.session_number).all()
-    result = []
+    course = Course.query.get(course_id)
+    students = {s.student_id: s for s in course.enrolled_students.all()}
+
+    sessions_with_attendance = []
     for s in sessions:
-        result.append({
+        logs = Attendancelog.query.filter_by(session_id=s.id, course_id=course_id).all()
+        present_ids = [log.student_id for log in logs if log.status == "present"]
+        absent_ids = set(students.keys()) - set(present_ids)
+
+        present_students = [
+            {
+                "student_id": sid,
+                "name": students[sid].name
+            }
+            for sid in present_ids if sid in students
+        ]
+        absent_students = [
+            {
+                "student_id": sid,
+                "name": students[sid].name
+            }
+            for sid in absent_ids if sid in students
+        ]
+
+        sessions_with_attendance.append({
             "session_id": s.id,
             "session_number": s.session_number,
             "is_active": s.is_active,
             "status": s.status,
             "start_time": s.start_time.isoformat() if s.start_time else None,
             "end_time": s.end_time.isoformat() if s.end_time else None,
+            "present_students": present_students,
+            "absent_students": absent_students,
+            "total_present": len(present_students),
+            "total_absent": len(absent_students),
         })
+
     return jsonify({
         "course_id": course_id,
-        "sessions": result
+        "sessions": sessions_with_attendance
     })
