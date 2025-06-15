@@ -192,11 +192,10 @@ def pre_attend_check(course_id):
     if not session or not session.is_active:
         return jsonify({"success": False, "message": "No active attendance session found for this course."}), 404
 
-    session_uid = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
     student_ip = request.form.get('student_ip') or request.remote_addr
 
     wifi_result = wifi_verification_system.verify_connection_strength(
-        session_id=session_uid,
+        session_id=session.id,
         student_ip=student_ip
     )
 
@@ -244,12 +243,12 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    session_uid = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    
     student_ip = request.form.get('student_ip') or request.remote_addr
 
     # ---- IP-based Connection Strength Check ----
     wifi_result = wifi_verification_system.verify_connection_strength(
-        session_id=session_uid,
+        session_id=session.id,
         student_ip=student_ip
     )
     if not wifi_result.get("success"):
