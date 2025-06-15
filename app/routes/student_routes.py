@@ -250,10 +250,47 @@ def student_attend_latest_session(course_id):
         session_id=session.id,
         student_ip=student_ip
     )
-    if not wifi_result.get("success"):
-        return jsonify(wifi_result), 403
-
     connection_strength = wifi_result.get("connection_strength", "unknown")
+
+    # If connection is not strong, block and log the attempt
+    if connection_strength != "strong":
+        from datetime import datetime
+        log = Attendancelog.query.filter_by(
+            student_id=student_id,
+            course_id=course_id,
+            session_id=session.id
+        ).first()
+        now = datetime.utcnow()
+        if log:
+            log.attempts_count = (log.attempts_count or 1) + 1
+            log.last_attempt = now
+            log.status = "attempted"
+            log.connection_strength = "weak"
+            log.verification_timestamp = now
+        else:
+            log = Attendancelog(
+                student_id=student_id,
+                course_id=course_id,
+                session_id=session.id,
+                teacher_id=course.teacher_id,
+                status="attempted",
+                connection_strength="weak",
+                verification_timestamp=now,
+                attempts_count=1,
+                last_attempt=now,
+            )
+            db.session.add(log)
+        db.session.commit()
+        return jsonify({
+            "success": False,
+            "message": "You are not on the same WiFi as your teacher. Attendance not allowed.",
+            "connection_strength": connection_strength,
+            "attempts_count": log.attempts_count,
+            "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
+            "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
+        }), 403
+
+    # ---- If connection is strong, proceed to face recognition and attendance marking ----
 
     # 3. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
