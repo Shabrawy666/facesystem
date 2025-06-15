@@ -290,3 +290,26 @@ def current_session_attendance(course_id):
         "present": present,
         "absent": absent
     })
+
+@teacher_bp.route('/teacher/course/<int:course_id>/sessions', methods=['GET'])
+@jwt_required()
+def get_all_sessions(course_id):
+    teacher_id = get_jwt_identity()
+    if not is_teacher_of_course(teacher_id, course_id):
+        return jsonify({"message": "Access denied"}), 403
+
+    sessions = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.session_number).all()
+    result = []
+    for s in sessions:
+        result.append({
+            "session_id": s.id,
+            "session_number": s.session_number,
+            "is_active": s.is_active,
+            "status": s.status,
+            "start_time": s.start_time.isoformat() if s.start_time else None,
+            "end_time": s.end_time.isoformat() if s.end_time else None,
+        })
+    return jsonify({
+        "course_id": course_id,
+        "sessions": result
+    })
