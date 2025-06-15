@@ -194,7 +194,8 @@ def session_attendance(course_id, session_id):
                 "name": Student.query.get(log.student_id).name if Student.query.get(log.student_id) else "",
                 "status": log.status,
                 "verified": log.is_verified,
-                "verification_score": log.verification_score
+                "verification_score": log.verification_score,
+                "connection_strength": log.connection_strength
             })
         else:
             attendance_list.append({
@@ -202,9 +203,11 @@ def session_attendance(course_id, session_id):
                 "name": Student.query.get(sid).name if Student.query.get(sid) else "",
                 "status": "absent",
                 "verified": False,
-                "verification_score": None
+                "verification_score": None,
+                "connection_strength": None
             })
     return jsonify(attendance_list)
+
 
 # ---- MANUAL EDIT ATTENDANCE (requires course and session) ----
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance', methods=['PUT'])

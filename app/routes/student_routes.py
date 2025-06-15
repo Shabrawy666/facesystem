@@ -171,6 +171,54 @@ def student_register_face():
         "encodings_count": len(student.face_encodings)
     }), 200 if saved_encodings > 0 else 400
 
+
+
+@student_bp.route('/student/pre_attend_check/<int:course_id>', methods=['POST'])
+@jwt_required()
+def pre_attend_check(course_id):
+    """Check if the student can mark attendance based on IP comparison."""
+    student_id = get_jwt_identity()
+    claims = get_jwt()
+    if claims.get('role') != 'student':
+        return jsonify({"message": "Forbidden"}), 403
+
+    course = Course.query.get(course_id)
+    student = Student.query.get(student_id)
+    if not course or not student or course not in student.enrolled_courses:
+        return jsonify({"success": False, "message": "You are not registered in this course."}), 403
+
+    # Find latest session
+    session = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.start_time.desc()).first()
+    if not session or not session.is_active:
+        return jsonify({"success": False, "message": "No active attendance session found for this course."}), 404
+
+    session_uid = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    student_ip = request.form.get('student_ip') or request.remote_addr
+
+    wifi_result = wifi_verification_system.verify_connection_strength(
+        session_id=session_uid,
+        student_ip=student_ip
+    )
+
+    # If weak, log the attempt for teacher to see
+    if not wifi_result.get("success"):
+        # Log failed attempt (do not mark as present, just log the try)
+        from datetime import datetime
+        log = Attendancelog(
+            student_id=student_id,
+            course_id=course_id,
+            session_id=session.id,
+            teacher_id=course.teacher_id,
+            status="attempted",
+            verification_timestamp=datetime.utcnow(),
+            connection_strength="weak"
+        )
+        db.session.add(log)
+        db.session.commit()
+
+    return jsonify(wifi_result), 200 if wifi_result.get("success") else 403
+
+
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
 @jwt_required()
 def student_attend_latest_session(course_id):
@@ -196,18 +244,17 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    # ---- WiFi Verification ----
-    wifi_ssid = request.form.get('wifi_ssid')
-    student_ip = request.form.get('student_ip')
-    wifi_result = wifi_verification_system.verify_wifi_connection(
-        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}",
-        student_wifi_ssid=wifi_ssid,
+    session_uid = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    student_ip = request.form.get('student_ip') or request.remote_addr
+
+    # ---- IP-based Connection Strength Check ----
+    wifi_result = wifi_verification_system.verify_connection_strength(
+        session_id=session_uid,
         student_ip=student_ip
     )
     if not wifi_result.get("success"):
         return jsonify(wifi_result), 403
 
-    # Use connection_strength from wifi_result or default to "unknown"
     connection_strength = wifi_result.get("connection_strength", "unknown")
 
     # 3. Save image temporarily
