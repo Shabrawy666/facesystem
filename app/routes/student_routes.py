@@ -112,42 +112,42 @@ def student_register_face():
     if claims.get('role') != 'student':
         return jsonify({"message": "Forbidden"}), 403
 
-    file = request.files.get('image')
-    if not file:
-        return jsonify({"success": False, "message": "Image file required"}), 400
+    files = request.files.getlist('image')
+    if not files or len(files) == 0:
+        return jsonify({"success": False, "message": "At least one image file required"}), 400
 
-    # Save image temporarily
-    with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_regface_{student_id}.jpg", delete=False) as tmpfile:
-        file.save(tmpfile.name)
-        temp_path = tmpfile.name
-
-    result = register_face_backend(student_id, temp_path)
-    os.remove(temp_path)
-
-    if not result.get("success"):
-        return jsonify({
-            "success": False,
-            "message": result.get("message", "Failed to register face")
-        })
-
-    # Save encoding as JSON array in face_encodings
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({"success": False, "message": "Student not found"}), 404
 
-    # Append new encoding to face_encodings array
-    new_encoding = result["encoding"]
-    if not new_encoding or len(new_encoding) != 128:
-        return jsonify({"success": False, "message": "Invalid encoding data"}), 400
+    saved_encodings = 0
+    failed_files = []
+    for idx, file in enumerate(files):
+        # Save image temporarily
+        with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_regface_{student_id}_{idx}.jpg", delete=False) as tmpfile:
+            file.save(tmpfile.name)
+            temp_path = tmpfile.name
 
-    # REMOVE DUPLICATE CHECK - always append, let user manage duplicates if needed
-    if student.face_encodings and isinstance(student.face_encodings, list):
-        student.face_encodings.append(new_encoding)
-    else:
-        student.face_encodings = [new_encoding]
+        result = register_face_backend(student_id, temp_path)
+        os.remove(temp_path)
 
-    flag_modified(student, 'face_encodings')
+        if not result.get("success"):
+            failed_files.append(file.filename or f"image_{idx+1}")
+            continue
 
+        new_encoding = result["encoding"]
+        if not new_encoding or len(new_encoding) != 128:
+            failed_files.append(file.filename or f"image_{idx+1}")
+            continue
+
+        if student.face_encodings and isinstance(student.face_encodings, list):
+            student.face_encodings.append(new_encoding)
+        else:
+            student.face_encodings = [new_encoding]
+        saved_encodings += 1
+
+    # Mark the JSON field as modified so SQLAlchemy will save it
+    flag_modified(student, "face_encodings")
     db.session.commit()
 
     access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
@@ -156,8 +156,8 @@ def student_register_face():
         for course in student.enrolled_courses
     ]
     return jsonify({
-        "success": True,
-        "message": "Face encoding saved successfully. Login complete.",
+        "success": saved_encodings > 0,
+        "message": f"Saved {saved_encodings} encodings." + (f" Failed: {failed_files}" if failed_files else ""),
         "access_token": access_token,
         "student_data": {
             "student_id": student.student_id,
@@ -165,9 +165,9 @@ def student_register_face():
             "email": student.email,
             "registered_courses": registered_courses
         },
-        "face_registered": True,
+        "face_registered": saved_encodings > 0,
         "encodings_count": len(student.face_encodings)
-    }), 200
+    }), 200 if saved_encodings > 0 else 400
 
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
 @jwt_required()
