@@ -160,9 +160,17 @@ def end_session(course_id):
     attended_student_ids = {log.student_id for log in Attendancelog.query.filter_by(session_id=session.id, course_id=course_id).all()}
     for student in course.enrolled_students:
         if student.student_id not in attended_student_ids:
-            absent_log = Attendancelog(session_id=session.id, course_id=course_id, student_id=student.student_id,
-                                       teacher_id=teacher_id, status="absent")
-            db.session.add(absent_log)
+            absent_log = Attendancelog(
+        session_id=session.id,
+        course_id=course_id,
+        student_id=student.student_id,
+        teacher_id=teacher_id,
+        status="absent",
+        connection_strength="unknown",   # or "unknown" or "weak" per your data model
+        verification_method="auto",     # optional, if you track method
+        attempts_count=1,               # optional, but matches other records
+    )
+    db.session.add(absent_log)
 
     db.session.commit()
     return jsonify({"success": True})
