@@ -19,12 +19,18 @@ _system = None
 _liveness = None
 
 def get_face_system():
+    """
+    Returns a singleton instance of FaceRecognitionSystem.
+    """
     global _system
     if _system is None:
         _system = FaceRecognitionSystem()
     return _system
 
 def get_liveness_system():
+    """
+    Returns a singleton instance of LivenessDetector.
+    """
     global _liveness
     if _liveness is None:
         _liveness = LivenessDetector()
@@ -35,7 +41,7 @@ def verify_attendance_backend(student_id: str, file_path: str):
     """
     Main backend API for verifying attendance using student's uploaded image.
     - Checks liveness and face match.
-    - Returns verification/dict result.
+    - Returns verification dict result.
     """
     image = cv2.imread(file_path)
     if image is None:
@@ -51,7 +57,9 @@ def verify_attendance_backend(student_id: str, file_path: str):
         "liveness_score": data.get("liveness_score"),
         "distance": data.get("distance"),
         "threshold_used": data.get("threshold_used"),
-        "verification_time": getattr(result, "verification_time", None)
+        "verification_time": getattr(result, "verification_time", None),
+        # Optionally include other details for debugging/frontend
+        "encodings_compared": data.get("encodings_compared"),
     }
 
 # --- Student Face Registration (API) ---
@@ -130,7 +138,13 @@ def batch_verify_images(image_data_list):
 
 # --- System Info ---
 def get_system_info():
-    return get_face_system().get_system_info()
+    """
+    Returns system info (can be implemented in FaceRecognitionSystem).
+    """
+    sys = get_face_system()
+    if hasattr(sys, "get_performance_metrics"):
+        return sys.get_performance_metrics()
+    return {}
 
 __all__ = [
     "verify_attendance_backend",
@@ -139,4 +153,4 @@ __all__ = [
     "preprocess_face_image",
     "batch_verify_images",
     "get_system_info",
-    ]
+]

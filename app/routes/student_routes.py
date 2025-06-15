@@ -5,14 +5,16 @@ import os
 import cv2
 import numpy as np
 import json
-from core.models.face_recognition import FaceRecognitionSystem
+import tempfile
 from core.utils.config import Config
 from enum import Enum
 from dataclasses import asdict, is_dataclass
+from core.session.wifi_verification import WifiVerificationSystem
+from app.ml_backend import verify_attendance_backend, register_face_backend
 
 student_bp = Blueprint('student', __name__)
 
-wifi_verification_system = None  # For later use, if needed
+wifi_verification_system = WifiVerificationSystem()
 
 def to_json_safe(obj):
     # Handles dataclass (including nested dataclasses) and other JSON edge cases
@@ -116,39 +118,27 @@ def student_register_face():
         return jsonify({"success": False, "message": "Image file required"}), 400
 
     # Save image temporarily
-    temp_path = f"/tmp/regface_{student_id}.jpg"
-    file.save(temp_path)
-    img = cv2.imread(temp_path)
-    if img is None:
-        os.remove(temp_path)
-        return jsonify({"success": False, "message": "Invalid image file"}), 400
+    with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_regface_{student_id}.jpg", delete=False) as tmpfile:
+        file.save(tmpfile.name)
+        temp_path = tmpfile.name
 
-    # Register face via ML code (extract embedding from the image)
-    frs = FaceRecognitionSystem()
-    encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
-    if not encoding_result.get("success") or encoding_result.get("encoding") is None:
-        os.remove(temp_path)
+    result = register_face_backend(student_id, temp_path)
+    os.remove(temp_path)
+
+    if not result.get("success"):
         return jsonify({
             "success": False,
-            "message": encoding_result.get("message", "Failed to register face")
+            "message": result.get("message", "Failed to register face")
         })
 
     # Save face encoding to student record (ARRAY(Float), not used for verification)
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
-        os.remove(temp_path)
         return jsonify({"success": False, "message": "Student not found"}), 404
-    student.face_encoding = encoding_result["encoding"]  # FLOAT ARRAY
+    student.face_encoding = result["encoding"]
     db.session.commit()
 
-    # Save processed face image (this is the ONLY source for recognition!)
-    processed = encoding_result.get("preprocessed", img)
-    images_dir = Config.STORED_IMAGES_DIR
-    os.makedirs(images_dir, exist_ok=True)
-    image_path = os.path.join(images_dir, f"{student_id}.jpg")
-    cv2.imwrite(image_path, processed)
-    print(f"[Register Face] Saved cropped face to: {image_path}")
-    os.remove(temp_path)
+    # No need to save processed image here, already handled in backend
 
     # Return login payload
     access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
@@ -196,6 +186,11 @@ def student_attend_latest_session(course_id):
     if not file:
         return jsonify({"success": False, "message": "Image file required"}), 400
 
+    # Get WiFi data from request
+    wifi_ssid = request.form.get("wifi_ssid") or (request.json or {}).get("wifi_ssid")
+    student_ip = request.form.get("student_ip") or (request.json or {}).get("student_ip")
+    session_id = None
+
     # 1. Get course and check registration
     course = Course.query.get(course_id)
     student = Student.query.get(student_id)
@@ -210,14 +205,30 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    # 3. Save image temporarily
-    temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
-    file.save(temp_path)
+    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+
+    # WiFi verification (if data provided)
+    wifi_result = None
+    if wifi_ssid and student_ip:
+        wifi_result = wifi_verification_system.verify_wifi_connection(
+            session_id=session_id,
+            student_id=student_id,
+            student_wifi_data={"ssid": wifi_ssid},
+            student_ip=student_ip
+        )
+        if not wifi_result.get("success"):
+            return jsonify(wifi_result), 403
+
+    # 3. Save image temporarily to /tmp
+    with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_attend_{student_id}_{session.id}.jpg", delete=False) as tmpfile:
+        file.save(tmpfile.name)
+        temp_path = tmpfile.name
 
     # 4. ML attendance verification
-    from app.ml_backend import verify_attendance_backend
     result = verify_attendance_backend(student_id, temp_path)
     os.remove(temp_path)
+
+    result["wifi_verification"] = wifi_result
 
     # 5. Log attendance if success
     if result and result.get("success"):

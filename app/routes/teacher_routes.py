@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
+from core.session.wifi_verification import WifiVerificationSystem
 
 teacher_bp = Blueprint('teacher', __name__)
+wifi_verification_system = WifiVerificationSystem()
 
 def is_teacher_of_course(teacher_id, course_id):
     return Course.query.filter_by(course_id=course_id, teacher_id=teacher_id).first() is not None
@@ -58,7 +60,6 @@ def teacher_profile():
         "name": teacher.name,
         "courses": course_objs
     })
-
 
 # ---- COURSE DETAILS (STUDENTS & ATTENDANCE) ----
 @teacher_bp.route('/teacher/course/<int:course_id>/details', methods=['GET'])
@@ -134,6 +135,15 @@ def start_session(course_id):
     )
     db.session.add(session)
     db.session.commit()
+
+    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    wifi_verification_system.create_session(
+        teacher_id=teacher_id,
+        hall_id=str(course_id),
+        wifi_ssid=wifi_ssid,
+        teacher_ip=request.remote_addr
+    )
+
     return jsonify({"success": True, "session_id": session.id})
 
 # ---- END SESSION ----
@@ -151,6 +161,10 @@ def end_session(course_id):
     session.is_active = False
     session.status = "completed"
     db.session.commit()
+
+    session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
+    wifi_verification_system.end_session(session_id, teacher_id)
+
     return jsonify({"success": True})
 
 # ---- VIEW ATTENDANCE (FOR SESSION OF A COURSE) ----
@@ -171,7 +185,7 @@ def session_attendance(course_id, session_id):
         log = attendance_dict.get(sid)
         if log:
             attendance_list.append({
-                                "student_id": log.student_id,
+                "student_id": log.student_id,
                 "name": Student.query.get(log.student_id).name if Student.query.get(log.student_id) else "",
                 "status": log.status,
                 "verified": log.is_verified,
@@ -186,7 +200,6 @@ def session_attendance(course_id, session_id):
                 "verification_score": None
             })
     return jsonify(attendance_list)
-
 
 # ---- MANUAL EDIT ATTENDANCE (requires course and session) ----
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance', methods=['PUT'])

@@ -4,6 +4,7 @@ import numpy as np
 import time
 import logging
 import json
+import tempfile  # <-- Added for temp file management
 from typing import Dict, Optional, List
 from deepface import DeepFace
 from core.utils.config import Config
@@ -166,8 +167,11 @@ class FaceRecognitionSystem:
             print(f"Preprocessed image shape: {preprocessed.shape}")
             print(f"Preprocessed image dtype: {preprocessed.dtype}")
 
-            temp_path = f"temp_preprocessed_{int(time.time())}.jpg"
-            cv2.imwrite(temp_path, (preprocessed * 255).astype(np.uint8))
+            # Use /tmp for temp files
+            with tempfile.NamedTemporaryFile(dir="/tmp", suffix=".jpg", delete=False) as tmpfile:
+                cv2.imwrite(tmpfile.name, (preprocessed * 255).astype(np.uint8))
+                temp_path = tmpfile.name
+
             print(f"Saved temporary image to: {temp_path}")
 
             try:
@@ -239,6 +243,7 @@ class FaceRecognitionSystem:
         import numpy as np
         import os
         import time
+        import tempfile
         start_time = time.time()
         self.metrics["attempts"] += 1
 
@@ -294,8 +299,10 @@ class FaceRecognitionSystem:
                     verification_type="preprocessing"
                 )
 
-            temp_path = f"temp_verify_{int(time.time())}.jpg"
-            cv2.imwrite(temp_path, (preprocessed * 255).astype(np.uint8))
+            with tempfile.NamedTemporaryFile(dir="/tmp", suffix=".jpg", delete=False) as tmpfile:
+                cv2.imwrite(tmpfile.name, (preprocessed * 255).astype(np.uint8))
+                temp_path = tmpfile.name
+
             try:
                 live_repr = DeepFace.represent(
                     img_path=temp_path,
@@ -399,6 +406,7 @@ class FaceRecognitionSystem:
 
     def verify_student_images(self, stored_image: np.ndarray, captured_image: np.ndarray) -> Dict:
         """Compare two face images directly with enhanced similarity calculation"""
+        import tempfile
         try:
             stored_processed = self.image_preprocessor.preprocess_image(stored_image)
             captured_processed = self.image_preprocessor.preprocess_image(captured_image)
@@ -409,12 +417,13 @@ class FaceRecognitionSystem:
                     "confidence_score": 0.0,
                     "message": "Failed to preprocess one or both images"
                 }
-                
-            temp_stored = f"temp_stored_{int(time.time())}.jpg"
-            temp_captured = f"temp_captured_{int(time.time())}.jpg"
             
-            cv2.imwrite(temp_stored, (stored_processed * 255).astype(np.uint8))
-            cv2.imwrite(temp_captured, (captured_processed * 255).astype(np.uint8))
+            with tempfile.NamedTemporaryFile(dir="/tmp", suffix=".jpg", delete=False) as tmp_stored, \
+                 tempfile.NamedTemporaryFile(dir="/tmp", suffix=".jpg", delete=False) as tmp_captured:
+                cv2.imwrite(tmp_stored.name, (stored_processed * 255).astype(np.uint8))
+                cv2.imwrite(tmp_captured.name, (captured_processed * 255).astype(np.uint8))
+                temp_stored = tmp_stored.name
+                temp_captured = tmp_captured.name
             
             try:
                 similarities = []
@@ -539,11 +548,14 @@ class FaceRecognitionSystem:
             current_time = time.time()
             cutoff_time = current_time - (days_old * 24 * 3600)
             
-            temp_files = [f for f in os.listdir(".") if f.startswith("temp_")]
+            # Clean up old temp files from /tmp instead of current dir
+            tmp_dir = "/tmp"
+            temp_files = [f for f in os.listdir(tmp_dir) if f.startswith("temp_")]
             for temp_file in temp_files:
+                temp_file_path = os.path.join(tmp_dir, temp_file)
                 try:
-                    if os.path.getctime(temp_file) < cutoff_time:
-                        os.remove(temp_file)
+                    if os.path.getctime(temp_file_path) < cutoff_time:
+                        os.remove(temp_file_path)
                 except:
                     continue
             
