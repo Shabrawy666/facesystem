@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
+from datetime import datetime
 
 teacher_bp = Blueprint('teacher', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -160,15 +161,21 @@ def end_session(course_id):
     attended_student_ids = {log.student_id for log in Attendancelog.query.filter_by(session_id=session.id, course_id=course_id).all()}
     for student in course.enrolled_students:
         if student.student_id not in attended_student_ids:
-            absent_log = Attendancelog(
-        session_id=session.id,
-        course_id=course_id,
+            now = datetime.utcnow()
+    absent_log = Attendancelog(
         student_id=student.student_id,
+        course_id=course_id,
+        session_id=session.id,
         teacher_id=teacher_id,
-        status="absent",
-        connection_strength="unknown",   # or "unknown" or "weak" per your data model
-        verification_method="auto",     # optional, if you track method
-        attempts_count=1,               # optional, but matches other records
+        connection_strength="uknown",      
+        status="absent",                   
+        date=now.date(),                  
+        time=now.time(),                   
+        verification_method="none",       
+        verification_timestamp=now,
+        attempts_count=1,
+        last_attempt=now,
+        verification_details={}
     )
     db.session.add(absent_log)
 
