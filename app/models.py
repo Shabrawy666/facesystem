@@ -137,7 +137,7 @@ class Attendancelog(db.Model):
     connection_strength = db.Column(db.String(20), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
-    status = db.Column(db.String(10), nullable=False)  # Remove default here
+    status = db.Column(db.String(10), nullable=False)
 
     # Verification fields
     marking_ip = db.Column(db.String(45), nullable=True)
@@ -263,7 +263,8 @@ class AttendanceSession(db.Model):
     teacher_id = db.Column(db.String(11), db.ForeignKey('teacher.teacher_id'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.course_id'), nullable=False)
     ip_address = db.Column(db.String(45), nullable=False)
-    wifi_ssid = db.Column(db.String, nullable=False)
+    teacher_ip = db.Column(db.String(45), nullable=False)  # <-- use this instead of wifi_ssid
+    # wifi_ssid = db.Column(db.String, nullable=False)  # <-- REMOVE THIS LINE
     
     # Session timestamps
     start_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -322,14 +323,3 @@ class AttendanceSession(db.Model):
         super(AttendanceSession, self).__init__(**kwargs)
         if not self.start_time:
             self.start_time = datetime.utcnow()
-
-
-class WifiSession(db.Model):
-    __tablename__ = 'wifi_session'
-    session_id = db.Column(db.String(64), primary_key=True)
-    teacher_id = db.Column(db.String(11), db.ForeignKey('teacher.teacher_id'), nullable=False)
-    hall_id = db.Column(db.String, nullable=True)
-    wifi_ssid = db.Column(db.String, nullable=False)
-    teacher_ip = db.Column(db.String(45), nullable=True)
-    start_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
