@@ -255,19 +255,19 @@ def student_attend_latest_session(course_id):
     # If connection is not strong, block and log the attempt
     if connection_strength != "strong":
         from datetime import datetime
+        now = datetime.utcnow()
         log = Attendancelog.query.filter_by(
             student_id=student_id,
             course_id=course_id,
             session_id=session.id
         ).first()
-        now = datetime.utcnow()
-        if log:
+        if log and log.status != "present":
             log.attempts_count = (log.attempts_count or 1) + 1
             log.last_attempt = now
             log.status = "attempted"
             log.connection_strength = "weak"
             log.verification_timestamp = now
-        else:
+        elif not log:  # create new
             log = Attendancelog(
                 student_id=student_id,
                 course_id=course_id,
@@ -280,6 +280,7 @@ def student_attend_latest_session(course_id):
                 last_attempt=now,
             )
             db.session.add(log)
+        # If log.status == "present", do nothing (can't downgrade or increment)
         db.session.commit()
         return jsonify({
             "success": False,
@@ -323,7 +324,6 @@ def student_attend_latest_session(course_id):
         if not student.face_encodings or not isinstance(student.face_encodings, list) or len(student.face_encodings) == 0:
             return jsonify({"success": False, "message": "No face encodings registered for this student."}), 400
 
-        # Compare to each encoding in DB
         stored_encodings = [np.array(enc) for enc in student.face_encodings if isinstance(enc, list) and len(enc) == 128]
         if len(stored_encodings) == 0:
             return jsonify({"success": False, "message": "No valid face encodings for this student."}), 400
@@ -341,7 +341,7 @@ def student_attend_latest_session(course_id):
         verified = bool(best_distance <= threshold)
 
         result = {
-            "success": bool(verified),  # always native bool for JSON
+            "success": bool(verified),
             "confidence_score": float(best_similarity),
             "distance": float(best_distance),
             "threshold_used": float(threshold),
@@ -370,11 +370,11 @@ def student_attend_latest_session(course_id):
                         "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
                         "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
                     }), 400
-
+                # Upgrade from attempted to present
+                log.status = "present"
                 log.attempts_count = (log.attempts_count or 1) + 1
                 log.last_attempt = now
                 log.verification_score = float(best_similarity)
-                log.status = "present"
                 log.verification_timestamp = now
                 log.connection_strength = connection_strength
                 log.liveness_score = liveness_score
@@ -396,15 +396,17 @@ def student_attend_latest_session(course_id):
             db.session.commit()
             return jsonify(result)
         else:
-            # Log as attempted (not present!)
+            # Only log as "attempted" (never "present" here, nor downgrade "present" to attempted)
             if log:
-                log.attempts_count = (log.attempts_count or 1) + 1
-                log.last_attempt = now
-                log.verification_score = float(best_similarity)
-                log.status = "attempted"
-                log.verification_timestamp = now
-                log.connection_strength = connection_strength
-                log.liveness_score = liveness_score
+                if log.status != "present":
+                    log.attempts_count = (log.attempts_count or 1) + 1
+                    log.last_attempt = now
+                    log.verification_score = float(best_similarity)
+                    log.verification_timestamp = now
+                    log.connection_strength = connection_strength
+                    log.liveness_score = liveness_score
+                    log.status = "attempted"
+                # If status == present, do nothing
             else:
                 log = Attendancelog(
                     student_id=student_id,
