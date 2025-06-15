@@ -143,6 +143,7 @@ def start_session(course_id):
         wifi_ssid=wifi_ssid,
         teacher_ip=request.remote_addr
     )
+    print("TEACHER: Created session_id:", session_id)
 
     return jsonify({"success": True, "session_id": session.id})
 

@@ -207,6 +207,8 @@ def student_attend_latest_session(course_id):
 
     session_id = f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
 
+    print("STUDENT: Attempting WiFi verify with session_id:", session_id)
+
     # WiFi verification (if data provided)
     wifi_result = None
     if wifi_ssid and student_ip:
