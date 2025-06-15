@@ -243,7 +243,6 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    
     student_ip = request.form.get('student_ip') or request.remote_addr
 
     # ---- IP-based Connection Strength Check ----
@@ -311,32 +310,51 @@ def student_attend_latest_session(course_id):
             "message": ("Attendance marked" if verified else "Face not recognized"),
         }
 
-        # 5. Log attendance if success
-        if verified:
-            log = Attendancelog.query.filter_by(
+        from datetime import datetime
+        log = Attendancelog.query.filter_by(
+            student_id=student_id,
+            course_id=course_id,
+            session_id=session.id
+        ).first()
+        now = datetime.utcnow()
+
+        if log:
+            # Always update attempts_count and last_attempt
+            log.attempts_count = (log.attempts_count or 1) + 1
+            log.last_attempt = now
+
+            if log.status == "present":
+                db.session.commit()
+                return jsonify({
+                    "success": False,
+                    "message": "Attendance already marked for this session.",
+                    "attempts_count": log.attempts_count,
+                    "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
+                    "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
+                }), 400
+
+            # If not already present, update as usual
+            log.verification_score = float(best_similarity)
+            log.status = "present"
+            log.verification_timestamp = now
+            log.connection_strength = connection_strength
+            log.liveness_score = liveness_score
+        else:
+            log = Attendancelog(
                 student_id=student_id,
                 course_id=course_id,
-                session_id=session.id
-            ).first()
-            from datetime import datetime
-            if log:
-                log.verification_score = float(best_similarity)
-                log.status = "present"
-                log.verification_timestamp = datetime.utcnow()
-            else:
-                log = Attendancelog(
-                    student_id=student_id,
-                    course_id=course_id,
-                    session_id=session.id,
-                    teacher_id=course.teacher_id,
-                    verification_score=float(best_similarity),
-                    status="present",
-                    verification_timestamp=datetime.utcnow(),
-                    connection_strength=connection_strength,
-                    liveness_score=liveness_score,
-                )
-                db.session.add(log)
-            db.session.commit()
+                session_id=session.id,
+                teacher_id=course.teacher_id,
+                verification_score=float(best_similarity),
+                status="present",
+                verification_timestamp=now,
+                connection_strength=connection_strength,
+                liveness_score=liveness_score,
+                attempts_count=1,
+                last_attempt=now,
+            )
+            db.session.add(log)
+        db.session.commit()
 
         return jsonify(result)
 
