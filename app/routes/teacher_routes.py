@@ -61,51 +61,23 @@ def teacher_profile():
         "courses": course_objs
     })
 
-# ---- COURSE DETAILS (STUDENTS & ATTENDANCE) ----
-@teacher_bp.route('/teacher/course/<int:course_id>/details', methods=['GET'])
+# ---- COURSE DETAILS ----
+@teacher_bp.route('/teacher/course/<int:course_id>/summary', methods=['GET'])
 @jwt_required()
-def course_details(course_id):
+def course_summary(course_id):
     teacher_id = get_jwt_identity()
     if not is_teacher_of_course(teacher_id, course_id):
         return jsonify({"message": "Access denied"}), 403
     course = Course.query.get(course_id)
-    students = course.enrolled_students
-    sessions = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.session_number).all()
-
-    session_list = [
-        {
-            "session_id": s.id,
-            "session_number": s.session_number,
-            "is_active": s.is_active,
-            "start_time": s.start_time.isoformat() if s.start_time else None,
-            "end_time": s.end_time.isoformat() if s.end_time else None,
-        } for s in sessions
-    ]
-
-    student_list = []
-    for student in students:
-        logs = Attendancelog.query.filter_by(student_id=student.student_id, course_id=course_id).all()
-        attendance = [
-            {
-                "session_id": log.session_id,
-                "status": log.status,
-                "verified": log.is_verified,
-                "verification_score": log.verification_score
-            } for log in logs
-        ]
-        student_list.append({
-            "student_id": student.student_id,
-            "name": student.name,
-            "attendance": attendance
-        })
-
+    if not course:
+        return jsonify({"message": "Course not found"}), 404
+    registered_students_count = course.enrolled_students.count()
     return jsonify({
         "course_id": course.course_id,
         "course_name": course.course_name,
-        "sessions": session_list,
-        "students": student_list
+        "registered_students_count": registered_students_count
     })
-
+# --- SESSION START ---
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/start', methods=['POST'])
 @jwt_required()
 def start_session(course_id):
@@ -188,41 +160,44 @@ def end_session(course_id):
 
 
 # ---- VIEW ATTENDANCE (FOR SESSION OF A COURSE) ----
-@teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance', methods=['GET'])
+@teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/details', methods=['GET'])
 @jwt_required()
-def session_attendance(course_id, session_id):
+def session_details(course_id, session_id):
     teacher_id = get_jwt_identity()
     if not is_teacher_of_course(teacher_id, course_id):
         return jsonify({"message": "Access denied"}), 403
     session = AttendanceSession.query.filter_by(id=session_id, course_id=course_id, teacher_id=teacher_id).first()
     if not session:
         return jsonify({"message": "Session not found"}), 404
-    logs = Attendancelog.query.filter_by(session_id=session_id, course_id=course_id).all()
-    students_in_course = [s.student_id for s in Course.query.get(course_id).enrolled_students]
-    attendance_dict = {log.student_id: log for log in logs}
-    attendance_list = []
-    for sid in students_in_course:
-        log = attendance_dict.get(sid)
-        if log:
-            attendance_list.append({
-                "student_id": log.student_id,
-                "name": Student.query.get(log.student_id).name if Student.query.get(log.student_id) else "",
-                "status": log.status,
-                "verified": log.is_verified,
-                "verification_score": log.verification_score,
-                "connection_strength": log.connection_strength
-            })
+    course = Course.query.get(course_id)
+    student_objs = course.enrolled_students.all()
+    logs_dict = {log.student_id: log for log in Attendancelog.query.filter_by(session_id=session_id, course_id=course_id).all()}
+    attendance = []
+    total_present = total_absent = 0
+    for student in student_objs:
+        log = logs_dict.get(student.student_id)
+        status = log.status if log else "absent"
+        if status == "present":
+            total_present += 1
         else:
-            attendance_list.append({
-                "student_id": sid,
-                "name": Student.query.get(sid).name if Student.query.get(sid) else "",
-                "status": "absent",
-                "verified": False,
-                "verification_score": None,
-                "connection_strength": None
-            })
-    return jsonify(attendance_list)
+            total_absent += 1
+        attendance.append({
+            "student_id": student.student_id,
+            "name": student.name,
+            "status": status
+        })
 
+    summary = {
+        "total_registered": len(student_objs),
+        "total_present": total_present,
+        "total_absent": total_absent
+    }
+    return jsonify({
+        "session_id": session_id,
+        "course_id": course_id,
+        "attendance": attendance,
+        "summary": summary
+    })
 
 # ---- MANUAL EDIT ATTENDANCE (requires course and session) ----
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/<int:session_id>/attendance/toggle', methods=['PUT'])
@@ -259,3 +234,58 @@ def toggle_attendance(course_id, session_id):
         old_status = "absent"
     db.session.commit()
     return jsonify({"success": True, "from_status": old_status, "to_status": log.status})
+
+# --- VIEW ATTENDANCE FOR ACTIVE SESSION ---
+@teacher_bp.route('/teacher/course/<int:course_id>/current_session/attendance', methods=['GET'])
+@jwt_required()
+def current_session_attendance(course_id):
+    teacher_id = get_jwt_identity()
+    if not is_teacher_of_course(teacher_id, course_id):
+        return jsonify({"message": "Access denied"}), 403
+
+    # Find active session for this course
+    session = AttendanceSession.query.filter_by(
+        course_id=course_id, is_active=True, teacher_id=teacher_id
+    ).order_by(AttendanceSession.start_time.desc()).first()
+
+    if not session:
+        return jsonify({"message": "No active session found for this course"}), 404
+
+    course = Course.query.get(course_id)
+    students = course.enrolled_students.all()
+    logs = Attendancelog.query.filter_by(session_id=session.id, course_id=course_id).all()
+    attendance_dict = {log.student_id: log for log in logs}
+
+    present = []
+    absent = []
+
+    for student in students:
+        log = attendance_dict.get(student.student_id)
+        if log and log.status == "present":
+            present.append({
+                "student_id": student.student_id,
+                "name": student.name,
+                "status": "present",
+                "mark_time": log.verification_timestamp.isoformat() if log.verification_timestamp else None
+            })
+        else:
+            absent.append({
+                "student_id": student.student_id,
+                "name": student.name,
+                "status": "absent"
+            })
+
+    summary = {
+        "session_id": session.id,
+        "course_id": course_id,
+        "total_students": len(students),
+        "num_present": len(present),
+        "num_absent": len(absent),
+        "start_time": session.start_time.isoformat() if session.start_time else None
+    }
+
+    return jsonify({
+        "summary": summary,
+        "present": present,
+        "absent": absent
+    })

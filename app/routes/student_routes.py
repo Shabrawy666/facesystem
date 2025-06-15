@@ -40,29 +40,7 @@ def to_json_safe(obj):
     else:
         return str(obj)
 
-def get_student_courses_with_attendance(student_obj):
-    # Returns [{course_id, course_name, attendance: [session_id, status, ...]}]
-    courses_info = []
-    for course in student_obj.enrolled_courses:
-        logs = Attendancelog.query.filter_by(student_id=student_obj.student_id, course_id=course.course_id).all()
-        attendance_data = [
-            {
-                "session_id": log.session_id,
-                "status": log.status,
-                "verified": log.is_verified,
-                "date": log.date.isoformat() if log.date else None,
-                "verification_score": log.verification_score,
-                "liveness_score": log.liveness_score
-            }
-            for log in logs
-        ]
-        courses_info.append({
-            "course_id": course.course_id,
-            "course_name": course.course_name,
-            "attendance": attendance_data
-        })
-    return courses_info
-
+# --- STUDENT LOGIN ---
 @student_bp.route('/student/login', methods=['POST'])
 def student_login():
     data = request.json
@@ -106,6 +84,7 @@ def student_login():
             }
         }), 202
 
+# --- STUDENT REGISTER FACE ---
 @student_bp.route('/student/register_face', methods=['POST'])
 @jwt_required()
 def student_register_face():
@@ -115,8 +94,12 @@ def student_register_face():
         return jsonify({"message": "Forbidden"}), 403
 
     files = request.files.getlist('image')
-    if not files or len(files) == 0:
-        return jsonify({"success": False, "message": "At least one image file required"}), 400
+    num_files = len(files)
+
+    if num_files < 3:
+        return jsonify({"success": False, "message": "At least 3 images are required for registration."}), 400
+    if num_files > 5:
+        return jsonify({"success": False, "message": "No more than 5 images are allowed."}), 400
 
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
@@ -148,7 +131,6 @@ def student_register_face():
             student.face_encodings = [new_encoding]
         saved_encodings += 1
 
-    # Mark the JSON field as modified so SQLAlchemy will save it
     flag_modified(student, "face_encodings")
     db.session.commit()
 
@@ -158,7 +140,7 @@ def student_register_face():
         for course in student.enrolled_courses
     ]
     return jsonify({
-        "success": saved_encodings > 0,
+        "success": saved_encodings >= 3,  # must have saved at least 3
         "message": f"Saved {saved_encodings} encodings." + (f" Failed: {failed_files}" if failed_files else ""),
         "access_token": access_token,
         "student_data": {
@@ -167,12 +149,11 @@ def student_register_face():
             "email": student.email,
             "registered_courses": registered_courses
         },
-        "face_registered": saved_encodings > 0,
+        "face_registered": saved_encodings >= 3,
         "encodings_count": len(student.face_encodings)
-    }), 200 if saved_encodings > 0 else 400
+    }), 200 if saved_encodings >= 3 else 400
 
-
-
+# --- PRE-ATTEND WIFI CHECK ---
 @student_bp.route('/student/pre_attend_check/<int:course_id>', methods=['POST'])
 @jwt_required()
 def pre_attend_check(course_id):
@@ -199,9 +180,9 @@ def pre_attend_check(course_id):
         student_ip=student_ip
     )
 
-    # If weak, log the attempt for teacher to see
+  
     if not wifi_result.get("success"):
-        # Log failed attempt (do not mark as present, just log the try)
+        
         from datetime import datetime
         log = Attendancelog(
             student_id=student_id,
@@ -217,7 +198,7 @@ def pre_attend_check(course_id):
 
     return jsonify(wifi_result), 200 if wifi_result.get("success") else 403
 
-
+# --- STUDENT TAKE HIS ATTENDANCE ---
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
 @jwt_required()
 def student_attend_latest_session(course_id):
@@ -409,17 +390,54 @@ def student_attend_latest_session(course_id):
             os.remove(temp_path)
         return jsonify({"success": False, "message": f"Verification error: {str(e)}"}), 500
 
-@student_bp.route('/student/courses_with_attendance', methods=['GET'])
+# --- COURSES VIEW FOR STUDENT ---
+@student_bp.route('/student/my_courses', methods=['GET'])
 @jwt_required()
-def courses_with_attendance():
+def student_courses():
     student_id = get_jwt_identity()
-    claims = get_jwt()
-    if claims.get('role') != 'student':
-        return jsonify({"message": "Forbidden"}), 403
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
-        return jsonify({"success": False, "message": "Student not found."}), 404
+        return jsonify({"success": False, "message": "Student not found"}), 404
+
     return jsonify({
         "success": True,
-        "courses": get_student_courses_with_attendance(student)
+        "courses": [
+            {
+                "course_id": course.course_id,
+                "course_name": course.course_name
+            }
+            for course in student.enrolled_courses
+        ]
+    })
+
+# --- SESSION ATTENDANCE FOR A SPECIFIC COURSE ---
+@student_bp.route('/student/my_course_sessions/<int:course_id>', methods=['GET'])
+@jwt_required()
+def my_course_sessions(course_id):
+    student_id = get_jwt_identity()
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({"success": False, "message": "Student not found"}), 404
+
+    course = Course.query.get(course_id)
+    if not course or course not in student.enrolled_courses:
+        return jsonify({"success": False, "message": "Not enrolled in this course"}), 403
+
+    sessions = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.session_number).all()
+    logs = {log.session_id: log.status for log in Attendancelog.query.filter_by(student_id=student_id, course_id=course_id).all()}
+    sessions_data = []
+
+    for session in sessions:
+        sessions_data.append({
+            "session_id": session.id,
+            "session_number": session.session_number,
+            "date": session.start_time.isoformat() if session.start_time else None,
+            "status": logs.get(session.id, "absent")
+        })
+
+    return jsonify({
+        "success": True,
+        "course_id": course.course_id,
+        "course_name": course.course_name,
+        "sessions": sessions_data
     })
