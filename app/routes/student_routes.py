@@ -300,6 +300,10 @@ def student_attend_latest_session(course_id):
     frs = FaceRecognitionSystem()
     try:
         img = cv2.imread(temp_path)
+        if img is None:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            return jsonify({"success": False, "message": "Could not read uploaded image. Please try a different photo."}), 400
 
         # --- Liveness Detection ---
         liveness_result = liveness_detector.analyze(img)
@@ -310,19 +314,19 @@ def student_attend_latest_session(course_id):
         encoding_result = frs.get_face_encoding_for_storage(img)
         os.remove(temp_path)
         if not encoding_result["success"]:
-            return jsonify({"success": False, "message": encoding_result.get("message", "Failed to extract encoding")})
+            return jsonify({"success": False, "message": encoding_result.get("message", "Failed to extract encoding")}), 400
 
         uploaded_encoding = np.array(encoding_result["encoding"])
         if uploaded_encoding.shape != (128,):
-            return jsonify({"success": False, "message": "Invalid encoding from uploaded image"})
+            return jsonify({"success": False, "message": "Invalid encoding from uploaded image"}), 400
 
         if not student.face_encodings or not isinstance(student.face_encodings, list) or len(student.face_encodings) == 0:
-            return jsonify({"success": False, "message": "No face encodings registered for this student."})
+            return jsonify({"success": False, "message": "No face encodings registered for this student."}), 400
 
         # Compare to each encoding in DB
         stored_encodings = [np.array(enc) for enc in student.face_encodings if isinstance(enc, list) and len(enc) == 128]
         if len(stored_encodings) == 0:
-            return jsonify({"success": False, "message": "No valid face encodings for this student."})
+            return jsonify({"success": False, "message": "No valid face encodings for this student."}), 400
 
         threshold = getattr(Config, 'FACE_RECOGNITION_THRESHOLD', 0.46)
         best_similarity = -1.0
@@ -348,57 +352,81 @@ def student_attend_latest_session(course_id):
         }
 
         from datetime import datetime
+        now = datetime.utcnow()
         log = Attendancelog.query.filter_by(
             student_id=student_id,
             course_id=course_id,
             session_id=session.id
         ).first()
-        now = datetime.utcnow()
 
-        if log:
-            # Always update attempts_count and last_attempt
-            log.attempts_count = (log.attempts_count or 1) + 1
-            log.last_attempt = now
+        if verified:
+            if log:
+                if log.status == "present":
+                    db.session.commit()
+                    return jsonify({
+                        "success": False,
+                        "message": "Attendance already marked for this session.",
+                        "attempts_count": log.attempts_count,
+                        "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
+                        "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
+                    }), 400
 
-            if log.status == "present":
-                db.session.commit()
-                return jsonify({
-                    "success": False,
-                    "message": "Attendance already marked for this session.",
-                    "attempts_count": log.attempts_count,
-                    "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
-                    "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
-                }), 400
-
-            # If not already present, update as usual
-            log.verification_score = float(best_similarity)
-            log.status = "present"
-            log.verification_timestamp = now
-            log.connection_strength = connection_strength
-            log.liveness_score = liveness_score
+                log.attempts_count = (log.attempts_count or 1) + 1
+                log.last_attempt = now
+                log.verification_score = float(best_similarity)
+                log.status = "present"
+                log.verification_timestamp = now
+                log.connection_strength = connection_strength
+                log.liveness_score = liveness_score
+            else:
+                log = Attendancelog(
+                    student_id=student_id,
+                    course_id=course_id,
+                    session_id=session.id,
+                    teacher_id=course.teacher_id,
+                    verification_score=float(best_similarity),
+                    status="present",
+                    verification_timestamp=now,
+                    connection_strength=connection_strength,
+                    liveness_score=liveness_score,
+                    attempts_count=1,
+                    last_attempt=now,
+                )
+                db.session.add(log)
+            db.session.commit()
+            return jsonify(result)
         else:
-            log = Attendancelog(
-                student_id=student_id,
-                course_id=course_id,
-                session_id=session.id,
-                teacher_id=course.teacher_id,
-                verification_score=float(best_similarity),
-                status="present",
-                verification_timestamp=now,
-                connection_strength=connection_strength,
-                liveness_score=liveness_score,
-                attempts_count=1,
-                last_attempt=now,
-            )
-            db.session.add(log)
-        db.session.commit()
-
-        return jsonify(result)
+            # Log as attempted (not present!)
+            if log:
+                log.attempts_count = (log.attempts_count or 1) + 1
+                log.last_attempt = now
+                log.verification_score = float(best_similarity)
+                log.status = "attempted"
+                log.verification_timestamp = now
+                log.connection_strength = connection_strength
+                log.liveness_score = liveness_score
+            else:
+                log = Attendancelog(
+                    student_id=student_id,
+                    course_id=course_id,
+                    session_id=session.id,
+                    teacher_id=course.teacher_id,
+                    verification_score=float(best_similarity),
+                    status="attempted",
+                    verification_timestamp=now,
+                    connection_strength=connection_strength,
+                    liveness_score=liveness_score,
+                    attempts_count=1,
+                    last_attempt=now,
+                )
+                db.session.add(log)
+            db.session.commit()
+            return jsonify(result), 403
 
     except Exception as e:
         if os.path.exists(temp_path):
             os.remove(temp_path)
-        return jsonify({"success": False, "message": f"Verification error: {str(e)}"})
+        return jsonify({"success": False, "message": f"Verification error: {str(e)}"}), 500
 
 @student_bp.route('/student/courses_with_attendance', methods=['GET'])
 @jwt_required()
