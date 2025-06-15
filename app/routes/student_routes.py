@@ -9,9 +9,8 @@ import tempfile
 from core.utils.config import Config
 from enum import Enum
 from dataclasses import asdict, is_dataclass
-from core.session.wifi_verification import WifiVerificationSystem
-from app.ml_backend import verify_attendance_backend, register_face_backend
 from app.ml_backend.wifi_verification_system import WifiVerificationSystem
+from app.ml_backend import verify_attendance_backend, register_face_backend
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
