@@ -139,16 +139,9 @@ def student_register_face():
     if not new_encoding or len(new_encoding) != 128:
         return jsonify({"success": False, "message": "Invalid encoding data"}), 400
 
-    # --- Revised duplicate check: Loosened and logs for debug ---
-    should_append = True
+    # REMOVE DUPLICATE CHECK - always append, let user manage duplicates if needed
     if student.face_encodings and isinstance(student.face_encodings, list):
-        # Avoid only exact duplicates (tolerance is very tight)
-        for idx, enc in enumerate(student.face_encodings):
-            if np.allclose(enc, new_encoding, atol=1e-3):  # Loosened tolerance!
-                should_append = False
-                break
-        if should_append:
-            student.face_encodings.append(new_encoding)
+        student.face_encodings.append(new_encoding)
     else:
         student.face_encodings = [new_encoding]
 
@@ -169,7 +162,8 @@ def student_register_face():
             "email": student.email,
             "registered_courses": registered_courses
         },
-        "face_registered": True
+        "face_registered": True,
+        "encodings_count": len(student.face_encodings)
     }), 200
 
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
