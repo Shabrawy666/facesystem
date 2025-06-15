@@ -46,10 +46,15 @@ def verify_attendance_backend(student_id: str, file_path: str):
     image = cv2.imread(file_path)
     if image is None:
         return {"success": False, "message": "Failed to load image"}
+    
+    print("VERIFY: img shape", image.shape, "sum", np.sum(image))
 
     frs = get_face_system()
     result = frs.verify_student(student_id, image)
     data = getattr(result, "data", {}) or {}
+    if hasattr(frs, "get_face_encoding_for_storage"):
+        encoding_res = frs.get_face_encoding_for_storage(image, student_id=student_id)
+        print("VERIFY: encoding sum", np.sum(encoding_res["encoding"]))
     return {
         "success": getattr(result, "success", False),
         "confidence_score": getattr(result, "confidence_score", 0.0),
