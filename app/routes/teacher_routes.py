@@ -136,15 +136,6 @@ def start_session(course_id):
     db.session.add(session)
     db.session.commit()
 
-    # ---- NEW: Create a persistent WifiSession for verification ----
-    wifi_verification_system.create_session(
-        teacher_id=teacher_id,
-        hall_id=str(course_id),
-        wifi_ssid=None,  # Pass None since it's no longer needed
-        teacher_ip=request.remote_addr,
-        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}"
-    )
-
     return jsonify({"success": True, "session_id": session.id})
 
 # ---- END SESSION ----
