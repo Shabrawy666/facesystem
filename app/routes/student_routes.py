@@ -240,15 +240,15 @@ def student_attend_latest_session(course_id):
                 best_similarity = similarity
                 best_distance = distance
 
-        verified = best_distance <= threshold
+        verified = bool(best_distance <= threshold)
 
         result = {
-            "success": verified,
-            "confidence_score": float(best_similarity),
-            "distance": float(best_distance),
-            "threshold_used": threshold,
-            "encodings_compared": len(stored_encodings),
-            "message": ("Attendance marked" if verified else "Face not recognized")
+        "success": bool(verified),  # always native bool for JSON
+        "confidence_score": float(best_similarity),
+        "distance": float(best_distance),
+        "threshold_used": float(threshold),
+        "encodings_compared": int(len(stored_encodings)),
+        "message": ("Attendance marked" if verified else "Face not recognized")
         }
 
         # 5. Log attendance if success
