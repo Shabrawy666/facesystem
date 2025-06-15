@@ -154,12 +154,6 @@ def end_session(course_id):
     session.status = "completed"
     db.session.commit()
 
-    # ---- NEW: End the persistent WifiSession ----
-    wifi_verification_system.end_session(
-        session_id=f"session_{session.start_time.strftime('%Y%m%d_%H%M%S')}_{course_id}",
-        teacher_id=teacher_id
-    )
-
     return jsonify({"success": True})
 
 
