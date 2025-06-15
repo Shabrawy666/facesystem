@@ -76,6 +76,8 @@ def register_face_backend(student_id: str, file_path: str):
     img = cv2.imread(file_path)
     if img is None:
         return {"success": False, "message": "Failed to load image"}
+    
+    print("REGISTER: img shape", img.shape, "sum", np.sum(img))
 
     frs = get_face_system()
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
@@ -84,6 +86,8 @@ def register_face_backend(student_id: str, file_path: str):
             "success": False,
             "message": encoding_result.get("message", "Failed to register face")
         }
+    
+    print("REGISTER: encoding sum", np.sum(encoding_result["encoding"]))
 
     processed = encoding_result.get("preprocessed", img)
     # Save cropped/processed face image
