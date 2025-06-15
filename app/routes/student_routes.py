@@ -12,10 +12,12 @@ from dataclasses import asdict, is_dataclass
 from app.ml_backend import register_face_backend
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
 from core.models.face_recognition import FaceRecognitionSystem
+from core.models.face_recognition import LivenessDetector
 from sqlalchemy.orm.attributes import flag_modified
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
+liveness_detector = LivenessDetector()
 
 def to_json_safe(obj):
     # Handles dataclass (including nested dataclasses) and other JSON edge cases
@@ -216,6 +218,13 @@ def student_attend_latest_session(course_id):
     frs = FaceRecognitionSystem()
     try:
         img = cv2.imread(temp_path)
+
+        # --- Liveness Detection ---
+        liveness_result = liveness_detector.analyze(img)
+        liveness_score = liveness_result.get("score", 0)
+        liveness_message = liveness_result.get("message", "")
+        is_live = liveness_result.get("live", True)
+
         encoding_result = frs.get_face_encoding_for_storage(img)
         os.remove(temp_path)
         if not encoding_result["success"]:
@@ -251,7 +260,9 @@ def student_attend_latest_session(course_id):
             "distance": float(best_distance),
             "threshold_used": float(threshold),
             "encodings_compared": int(len(stored_encodings)),
-            "message": ("Attendance marked" if verified else "Face not recognized")
+            "liveness_score": liveness_score,
+            "liveness_message": liveness_message,
+            "message": ("Attendance marked" if verified else "Face not recognized"),
         }
 
         # 5. Log attendance if success
@@ -275,7 +286,8 @@ def student_attend_latest_session(course_id):
                     verification_score=float(best_similarity),
                     status="present",
                     verification_timestamp=datetime.utcnow(),
-                    connection_strength=connection_strength  # <-- ADD THIS LINE
+                    connection_strength=connection_strength,
+                    liveness_score=liveness_score,
                 )
                 db.session.add(log)
             db.session.commit()
