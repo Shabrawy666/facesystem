@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
+from datetime import timedelta
 
 teacher_bp = Blueprint('teacher', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -19,7 +20,7 @@ def teacher_login():
     if not teacher or not teacher.check_password(password):
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-    token = create_access_token(identity=teacher.teacher_id, additional_claims={"role": "teacher"})
+    token = create_access_token(identity=teacher.teacher_id, additional_claims={"role": "teacher"}, expires_delta=timedelta(days=7))
     courses = Course.query.filter_by(teacher_id=teacher.teacher_id).all()
     courses_list = [{"course_id": c.course_id, "course_name": c.course_name} for c in courses]
     return jsonify({
@@ -102,7 +103,7 @@ def start_session(course_id):
         start_time=datetime.utcnow(),
         is_active=True,
         ip_address=request.remote_addr,
-        teacher_ip=request.remote_addr,  # This is your new column!
+        teacher_ip=request.remote_addr, 
         status="active"
     )
     db.session.add(session)

@@ -14,6 +14,7 @@ from app.ml_back.wifi_verification_system import WifiVerificationSystem
 from core.models.face_recognition import FaceRecognitionSystem
 from core.models.face_recognition import LivenessDetector
 from sqlalchemy.orm.attributes import flag_modified
+from datetime import timedelta
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -50,7 +51,7 @@ def student_login():
     if not student or not student.check_password(password):
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
+    access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"}, expires_delta=timedelta(days=7))
 
     registered_courses = [
         {"course_id": course.course_id, "course_name": course.course_name}
@@ -134,7 +135,7 @@ def student_register_face():
     flag_modified(student, "face_encodings")
     db.session.commit()
 
-    access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
+    access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"}, expires_delta=timedelta(days=7))
     registered_courses = [
         {"course_id": course.course_id, "course_name": course.course_name}
         for course in student.enrolled_courses
