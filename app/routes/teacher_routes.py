@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.models import Teacher, Student, Course, AttendanceSession, Attendancelog, db
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
-from datetime import datetime
 
 teacher_bp = Blueprint('teacher', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -158,26 +157,31 @@ def end_session(course_id):
 
     # Mark all students who haven't attended as absent
     course = Course.query.get(course_id)
-    attended_student_ids = {log.student_id for log in Attendancelog.query.filter_by(session_id=session.id, course_id=course_id).all()}
+    now = datetime.utcnow()
     for student in course.enrolled_students:
-        if student.student_id not in attended_student_ids:
-            now = datetime.utcnow()
-    absent_log = Attendancelog(
-        student_id=student.student_id,
-        course_id=course_id,
-        session_id=session.id,
-        teacher_id=teacher_id,
-        connection_strength="uknown",      
-        status="absent",                   
-        date=now.date(),                  
-        time=now.time(),                   
-        verification_method="none",       
-        verification_timestamp=now,
-        attempts_count=1,
-        last_attempt=now,
-        verification_details={}
-    )
-    db.session.add(absent_log)
+        # Only add an Attendancelog if it doesn't already exist
+        log_exists = Attendancelog.query.filter_by(
+            student_id=student.student_id,
+            course_id=course_id,
+            session_id=session.id
+        ).first()
+        if log_exists is None:
+            absent_log = Attendancelog(
+                student_id=student.student_id,
+                course_id=course_id,
+                session_id=session.id,
+                teacher_id=teacher_id,
+                connection_strength="unknown",   
+                status="absent",
+                date=now.date(),
+                time=now.time(),
+                verification_method="none",
+                verification_timestamp=now,
+                attempts_count=1,
+                last_attempt=now,
+                verification_details={}
+            )
+            db.session.add(absent_log)
 
     db.session.commit()
     return jsonify({"success": True})
