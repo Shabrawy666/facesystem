@@ -11,6 +11,7 @@ from enum import Enum
 from dataclasses import asdict, is_dataclass
 from app.ml_backend import register_face_backend
 from app.ml_back.wifi_verification_system import WifiVerificationSystem
+from core.models.face_recognition import FaceRecognitionSystem
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
