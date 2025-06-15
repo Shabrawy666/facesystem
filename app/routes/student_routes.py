@@ -9,8 +9,9 @@ import tempfile
 from core.utils.config import Config
 from enum import Enum
 from dataclasses import asdict, is_dataclass
-from app.ml_back.wifi_verification_system import WifiVerificationSystem
+from core.session.wifi_verification import WifiVerificationSystem
 from app.ml_backend import verify_attendance_backend, register_face_backend
+from app.ml_backend.wifi_verification_system import WifiVerificationSystem
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -76,7 +77,8 @@ def student_login():
         for course in student.enrolled_courses
     ]
 
-    if student.face_encoding:
+    # --- CHANGE: Check face_encodings (JSON/multi-image) instead of face_encoding ---
+    if student.face_encodings and len(student.face_encodings) > 0:
         # Face already registered, proceed with normal login
         return jsonify({
             "success": True,
@@ -112,32 +114,35 @@ def student_register_face():
     if claims.get('role') != 'student':
         return jsonify({"message": "Forbidden"}), 403
 
-    file = request.files.get('image')
-    if not file:
-        return jsonify({"success": False, "message": "Image file required"}), 400
+    # --- CHANGE: Support multi-image registration ---
+    files = request.files.getlist('images')
+    if not files or len(files) == 0:
+        # Fallback: support single image for backward compatibility
+        file = request.files.get('image')
+        if not file:
+            return jsonify({"success": False, "message": "At least one image file required"}), 400
+        files = [file]
 
-    # Save image temporarily
-    with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_regface_{student_id}.jpg", delete=False) as tmpfile:
-        file.save(tmpfile.name)
-        temp_path = tmpfile.name
+    encodings = []
+    for file in files:
+        with tempfile.NamedTemporaryFile(dir="/tmp", suffix=f"_regface_{student_id}.jpg", delete=False) as tmpfile:
+            file.save(tmpfile.name)
+            temp_path = tmpfile.name
+        result = register_face_backend(student_id, temp_path)
+        os.remove(temp_path)
+        if result.get("success") and result.get("encoding") is not None:
+            encodings.append(result["encoding"])
+        # else: skip failed face
 
-    result = register_face_backend(student_id, temp_path)
-    os.remove(temp_path)
+    if not encodings:
+        return jsonify({"success": False, "message": "No valid face encodings found."})
 
-    if not result.get("success"):
-        return jsonify({
-            "success": False,
-            "message": result.get("message", "Failed to register face")
-        })
-
-    # Save face encoding to student record (ARRAY(Float), not used for verification)
+    # Save face encodings (as JSON/list of lists)
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({"success": False, "message": "Student not found"}), 404
-    student.face_encoding = result["encoding"]
+    student.face_encodings = encodings
     db.session.commit()
-
-    # No need to save processed image here, already handled in backend
 
     # Return login payload
     access_token = create_access_token(identity=student.student_id, additional_claims={"role": "student"})
@@ -147,7 +152,7 @@ def student_register_face():
     ]
     return jsonify({
         "success": True,
-        "message": "Face encoding saved successfully. Login complete.",
+        "message": f"Face encoding(s) saved successfully. Login complete.",
         "access_token": access_token,
         "student_data": {
             "student_id": student.student_id,
@@ -210,9 +215,6 @@ def student_attend_latest_session(course_id):
     if not wifi_result.get("success"):
         return jsonify(wifi_result), 403
 
-    # Default connection_strength if wifi_result does not have it
-    connection_strength = wifi_result.get("strength_label") or wifi_result.get("connection_strength") or "unknown"
-
     # 3. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
     file.save(temp_path)
@@ -235,7 +237,6 @@ def student_attend_latest_session(course_id):
             log.liveness_score = float(result.get("liveness_score")) if result.get("liveness_score") is not None else None
             log.status = "present"
             log.verification_timestamp = datetime.utcnow()
-            log.connection_strength = connection_strength  # <-- ADD THIS LINE
         else:
             log = Attendancelog(
                 student_id=student_id,
@@ -245,8 +246,7 @@ def student_attend_latest_session(course_id):
                 verification_score=float(result.get("confidence_score")) if result.get("confidence_score") is not None else None,
                 liveness_score=float(result.get("liveness_score")) if result.get("liveness_score") is not None else None,
                 status="present",
-                verification_timestamp=datetime.utcnow(),
-                connection_strength=connection_strength  # <-- ADD THIS LINE
+                verification_timestamp=datetime.utcnow()
             )
             db.session.add(log)
         db.session.commit()

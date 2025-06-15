@@ -50,11 +50,15 @@ def verify_attendance_backend(student_id: str, file_path: str):
     print("VERIFY: img shape", image.shape, "sum", np.sum(image))
 
     frs = get_face_system()
+    # Multi-encoding support is native in FaceRecognitionSystem.verify_student
     result = frs.verify_student(student_id, image)
     data = getattr(result, "data", {}) or {}
-    if hasattr(frs, "get_face_encoding_for_storage"):
-        encoding_res = frs.get_face_encoding_for_storage(image, student_id=student_id)
-        print("VERIFY: encoding sum", np.sum(encoding_res["encoding"]))
+    # Print all compared encoding sums for debug
+    if hasattr(frs, "multiple_encodings"):
+        enc_list = frs.multiple_encodings.get(student_id, [])
+        print("VERIFY: student has", len(enc_list), "encodings")
+        for idx, enc in enumerate(enc_list):
+            print(f"VERIFY: encoding {idx+1} sum", np.sum(enc))
     return {
         "success": getattr(result, "success", False),
         "confidence_score": getattr(result, "confidence_score", 0.0),
@@ -80,6 +84,7 @@ def register_face_backend(student_id: str, file_path: str):
     print("REGISTER: img shape", img.shape, "sum", np.sum(img))
 
     frs = get_face_system()
+    # Multi-encoding registration is handled in FaceRecognitionSystem.get_face_encoding_for_storage
     encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
     if not encoding_result.get("success") or encoding_result.get("encoding") is None:
         return {
@@ -90,7 +95,7 @@ def register_face_backend(student_id: str, file_path: str):
     print("REGISTER: encoding sum", np.sum(encoding_result["encoding"]))
 
     processed = encoding_result.get("preprocessed", img)
-    # Save cropped/processed face image
+    # Save cropped/processed face image (latest for this student)
     os.makedirs(STORED_IMAGES_DIR, exist_ok=True)
     image_path = os.path.join(STORED_IMAGES_DIR, f"{student_id}.jpg")
     cv2.imwrite(image_path, processed)
@@ -102,6 +107,42 @@ def register_face_backend(student_id: str, file_path: str):
         "face_quality": encoding_result.get("quality_score"),
         "image_path": image_path
     }
+
+# --- Multi-image Registration (API utility) ---
+def register_faces_backend(student_id: str, file_paths: list):
+    """
+    Register multiple faces: processes and encodes each submitted image, saves all encodings for student.
+    Returns: {success, encodings, messages}
+    """
+    frs = get_face_system()
+    encodings = []
+    messages = []
+    for idx, path in enumerate(file_paths):
+        img = cv2.imread(path)
+        if img is None:
+            messages.append(f"Image {idx+1}: Failed to load image")
+            continue
+        print(f"REGISTER {idx+1}: img shape", img.shape, "sum", np.sum(img))
+        encoding_result = frs.get_face_encoding_for_storage(img, student_id=student_id)
+        if encoding_result.get("success") and encoding_result.get("encoding") is not None:
+            encodings.append(encoding_result["encoding"])
+            print(f"REGISTER {idx+1}: encoding sum", np.sum(encoding_result["encoding"]))
+        else:
+            messages.append(f"Image {idx+1}: {encoding_result.get('message', 'Failed to register face')}")
+    if encodings:
+        return {
+            "success": True,
+            "encodings": encodings,
+            "message": "Face encodings registered.",
+            "details": messages
+        }
+    else:
+        return {
+            "success": False,
+            "encodings": [],
+            "message": "No valid face encodings found.",
+            "details": messages
+        }
 
 # --- Liveness Detection (standalone, for testing) ---
 def run_liveness_detection(file_path: str):
@@ -158,6 +199,7 @@ def get_system_info():
 __all__ = [
     "verify_attendance_backend",
     "register_face_backend",
+    "register_faces_backend",
     "run_liveness_detection",
     "preprocess_face_image",
     "batch_verify_images",

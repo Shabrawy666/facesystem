@@ -31,7 +31,7 @@ class Student(db.Model):
     student_id = db.Column(db.String(11), primary_key=True, unique=True, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     _password = db.Column("password", db.String(255), nullable=False)
-    face_encoding = db.Column(ARRAY(Float), nullable=True)
+    face_encodings = db.Column(JSON, nullable=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
 
     # Many-to-many relationship with Course
