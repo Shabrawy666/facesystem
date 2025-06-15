@@ -364,7 +364,6 @@ def student_attend_latest_session(course_id):
                 log.attempts_count = (log.attempts_count or 1) + 1
                 log.last_attempt = now
                 if log.status == "present":
-                    # DO NOT update verification_timestamp, keep as the original successful time!
                     db.session.commit()
                     return jsonify({
                         "success": False,
@@ -376,7 +375,7 @@ def student_attend_latest_session(course_id):
                 # Was attempted and now succeeded:
                 log.status = "present"
                 log.verification_score = float(best_similarity)
-                log.verification_timestamp = now  # update to successful time!
+                log.verification_timestamp = now
                 log.connection_strength = connection_strength
                 log.liveness_score = liveness_score
             else:
@@ -387,7 +386,7 @@ def student_attend_latest_session(course_id):
                     teacher_id=course.teacher_id,
                     verification_score=float(best_similarity),
                     status="present",
-                    verification_timestamp=now,    # set only on success
+                    verification_timestamp=now,
                     connection_strength=connection_strength,
                     liveness_score=liveness_score,
                     attempts_count=1,
@@ -396,35 +395,13 @@ def student_attend_latest_session(course_id):
                 db.session.add(log)
             db.session.commit()
             return jsonify(result)
-
         else:
-            if log:
-                log.attempts_count = (log.attempts_count or 1) + 1
-                log.last_attempt = now
-                # Never overwrite present, never overwrite verification_timestamp if present
-                if log.status != "present":
-                    log.verification_score = float(best_similarity)
-                    log.connection_strength = connection_strength
-                    log.liveness_score = liveness_score
-                    log.status = "attempted"
-                    log.verification_timestamp = None  # always null for failed attempts
-                # else: present stays, do not touch its verification_timestamp
-            else:
-                log = Attendancelog(
-                    student_id=student_id,
-                    course_id=course_id,
-                    session_id=session.id,
-                    teacher_id=course.teacher_id,
-                    verification_score=float(best_similarity),
-                    status="attempted",
-                    verification_timestamp=None,       # always null for failed attempts
-                    connection_strength=connection_strength,
-                    liveness_score=liveness_score,
-                    attempts_count=1,
-                    last_attempt=now,
-                )
-                db.session.add(log)
-            db.session.commit()
+            # === NO database logging for failed face attempts! ===
+            # You may optionally log this for monitoring (print, log, metric, etc.)
+            # Example for the teacher or admin logs:
+            # app.logger.info(
+            #     f"Failed attendance attempt: student_id={student_id}, course_id={course_id}, session_id={session.id}, score={best_similarity}, liveness={liveness_score}"
+            # )
             return jsonify(result), 403
 
     except Exception as e:
