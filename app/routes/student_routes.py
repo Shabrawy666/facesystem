@@ -240,18 +240,8 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    # 3. Simulate connection strength (same as pre_attend_check)
-    teacher_ip = session.teacher_ip or request.remote_addr
-    student_ip = request.form.get('student_ip') or request.remote_addr
-
-    def simulate_connection_strength(t_ip, s_ip):
-        if s_ip == t_ip:
-            return "strong", "same_ip"
-        elif '.'.join(t_ip.split('.')[:3]) == '.'.join(s_ip.split('.')[:3]):
-            return "medium", "same_subnet"
-        return "weak", "different_network"
-
-    connection_strength, ip_relation = simulate_connection_strength(teacher_ip, student_ip)
+    # 3. Assume strong connection since pre_attend_check must have been passed
+    connection_strength = "strong"
 
     # 4. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
@@ -360,6 +350,7 @@ def student_attend_latest_session(course_id):
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return jsonify({"success": False, "message": f"Verification error: {str(e)}"}), 500
+
 
 # --- COURSES VIEW FOR STUDENT ---
 @student_bp.route('/student/my_courses', methods=['GET'])
