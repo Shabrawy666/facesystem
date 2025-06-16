@@ -232,12 +232,25 @@ def toggle_attendance(course_id, session_id):
         log.status = "absent" if log.status == "present" else "present"
     else:
         # If no log yet, means absent; create as present
-        log = Attendancelog(session_id=session_id, course_id=course_id, student_id=student_id,
-                            teacher_id=teacher_id, status="present")
+        log = Attendancelog(
+            session_id=session_id,
+            course_id=course_id,
+            student_id=student_id,
+            teacher_id=teacher_id,
+            status="present",
+            connection_strength="manual",  # ✅ Set default connection_strength
+            verification_method="face",
+            verification_timestamp=datetime.utcnow(),
+            attempts_count=1,
+            last_attempt=datetime.utcnow(),
+            verification_details={}
+        )
         db.session.add(log)
         old_status = "absent"
+
     db.session.commit()
     return jsonify({"success": True, "from_status": old_status, "to_status": log.status})
+
 
 # --- VIEW ATTENDANCE FOR ACTIVE SESSION ---
 @teacher_bp.route('/teacher/course/<int:course_id>/current_session/attendance', methods=['GET'])
