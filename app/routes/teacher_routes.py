@@ -85,7 +85,6 @@ def course_summary(course_id):
         "registered_students_count": registered_students_count
     })
 # --- SESSION START ---
-# --- SESSION START ---
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/start', methods=['POST'])
 @jwt_required()
 def start_session(course_id):
@@ -152,7 +151,6 @@ def end_session(course_id):
                 connection_strength="unknown",   
                 status="absent",
                 date=now.date(),
-                time=now.time(),
                 verification_method="none",
                 verification_timestamp=now,
                 attempts_count=1,

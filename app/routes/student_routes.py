@@ -14,7 +14,7 @@ from app.ml_back.wifi_verification_system import WifiVerificationSystem
 from core.models.face_recognition import FaceRecognitionSystem
 from core.models.face_recognition import LivenessDetector
 from sqlalchemy.orm.attributes import flag_modified
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 student_bp = Blueprint('student', __name__)
 wifi_verification_system = WifiVerificationSystem()
@@ -165,8 +165,7 @@ def get_real_ip():
 @student_bp.route('/student/pre_attend_check/<int:course_id>', methods=['POST'])
 @jwt_required()
 def pre_attend_check(course_id):
-    from datetime import datetime
-
+    
     student_id = get_jwt_identity()
     claims = get_jwt()
     if claims.get('role') != 'student':
@@ -184,32 +183,34 @@ def pre_attend_check(course_id):
     teacher_ip = session.teacher_ip or get_real_ip()
     student_ip = request.form.get('student_ip') or get_real_ip()
 
-    # --- Simulated Signal Strength Based on IP ---
-    def simulate_signal_strength(t_ip, s_ip):
+    # --- Simulated Connection Strength Based on IP ---
+    def simulate_connection_strength(t_ip, s_ip):
         if s_ip == t_ip:
             return "strong", "same_ip"
         elif '.'.join(t_ip.split('.')[:3]) == '.'.join(s_ip.split('.')[:3]):
             return "medium", "same_subnet"
         return "weak", "different_network"
 
-    signal_strength, ip_relation = simulate_signal_strength(teacher_ip, student_ip)
+    connection_strength, ip_relation = simulate_connection_strength(teacher_ip, student_ip)
 
     # --- Block if weak connection (different network) ---
     allow = ip_relation in ["same_ip", "same_subnet"]
     if not allow:
+        # Do not log blocked attempts
         pass
 
     return jsonify({
         "success": allow,
         "student_ip": student_ip,
         "teacher_ip": teacher_ip,
-        "signal_strength": signal_strength,
+        "connection_strength": connection_strength,
         "ip_relation": ip_relation,
         "message": (
             "Connection verified. You may take attendance." if allow else
             "You are not on the same WiFi as your teacher. Attendance is blocked."
         )
     }), 200 if allow else 403
+
 
 # --- STUDENT TAKE HIS ATTENDANCE ---
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
@@ -236,56 +237,6 @@ def student_attend_latest_session(course_id):
         return jsonify({"success": False, "message": "No attendance session found for this course yet."}), 404
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
-
-    student_ip = request.form.get('student_ip') or request.remote_addr
-
-    # ---- IP-based Connection Strength Check ----
-    wifi_result = wifi_verification_system.verify_connection_strength(
-        session_id=session.id,
-        student_ip=student_ip
-    )
-    connection_strength = wifi_result.get("connection_strength", "unknown")
-
-    # If connection is not strong, block and log the attempt
-    if connection_strength != "strong":
-        from datetime import datetime
-        now = datetime.utcnow()
-        log = Attendancelog.query.filter_by(
-            student_id=student_id,
-            course_id=course_id,
-            session_id=session.id
-        ).first()
-        if log:
-            log.attempts_count = (log.attempts_count or 1) + 1
-            log.last_attempt = now
-            if log.status != "present":
-                log.status = "attempted"
-                log.connection_strength = "weak"
-                log.verification_timestamp = now
-        else:
-            log = Attendancelog(
-                student_id=student_id,
-                course_id=course_id,
-                session_id=session.id,
-                teacher_id=course.teacher_id,
-                status="attempted",
-                connection_strength="weak",
-                verification_timestamp=now,
-                attempts_count=1,
-                last_attempt=now,
-            )
-            db.session.add(log)
-        db.session.commit()
-        return jsonify({
-            "success": False,
-            "message": "You are not on the same WiFi as your teacher. Attendance not allowed.",
-            "connection_strength": connection_strength,
-            "attempts_count": log.attempts_count,
-            "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
-            "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
-        }), 403
-
-    # ---- If connection is strong, proceed to face recognition and attendance marking ----
 
     # 3. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
