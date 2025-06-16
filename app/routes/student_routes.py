@@ -197,17 +197,7 @@ def pre_attend_check(course_id):
     # --- Block if weak connection (different network) ---
     allow = ip_relation in ["same_ip", "same_subnet"]
     if not allow:
-        log = Attendancelog(
-            student_id=student_id,
-            course_id=course_id,
-            session_id=session.id,
-            teacher_id=course.teacher_id,
-            status="attempted",
-            verification_timestamp=datetime.utcnow(),
-            connection_strength=signal_strength
-        )
-        db.session.add(log)
-        db.session.commit()
+        pass
 
     return jsonify({
         "success": allow,
