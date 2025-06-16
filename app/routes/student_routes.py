@@ -256,10 +256,24 @@ def student_attend_latest_session(course_id):
                 os.remove(temp_path)
             return jsonify({"success": False, "message": "Could not read uploaded image. Please try a different photo."}), 400
 
+        # Liveness detection first
         liveness_result = liveness_detector.analyze(img)
         liveness_score = liveness_result.get("score", 0)
         liveness_message = liveness_result.get("message", "")
         is_live = liveness_result.get("live", True)
+
+        # If spoof detected, do not log attendance and return error
+        if not is_live:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            return jsonify({
+                "success": False,
+                "message": "Spoof detected. This is not a live photo; attendance not marked.",
+                "liveness_score": liveness_score,
+                "liveness_message": liveness_message
+            }), 403
+
+        # Only proceed if live
 
         encoding_result = frs.get_face_encoding_for_storage(img)
         os.remove(temp_path)
