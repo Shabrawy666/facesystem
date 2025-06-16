@@ -158,7 +158,8 @@ def student_register_face():
 @student_bp.route('/student/pre_attend_check/<int:course_id>', methods=['POST'])
 @jwt_required()
 def pre_attend_check(course_id):
-    """Check if the student can mark attendance based on IP comparison."""
+    from datetime import datetime
+
     student_id = get_jwt_identity()
     claims = get_jwt()
     if claims.get('role') != 'student':
@@ -169,22 +170,26 @@ def pre_attend_check(course_id):
     if not course or not student or course not in student.enrolled_courses:
         return jsonify({"success": False, "message": "You are not registered in this course."}), 403
 
-    # Find latest session
     session = AttendanceSession.query.filter_by(course_id=course_id).order_by(AttendanceSession.start_time.desc()).first()
     if not session or not session.is_active:
         return jsonify({"success": False, "message": "No active attendance session found for this course."}), 404
 
+    teacher_ip = session.teacher_ip
     student_ip = request.form.get('student_ip') or request.remote_addr
 
-    wifi_result = wifi_verification_system.verify_connection_strength(
-        session_id=session.id,
-        student_ip=student_ip
-    )
+    # --- Simulated Signal Strength Based on IP ---
+    def simulate_signal_strength(t_ip, s_ip):
+        if s_ip == t_ip:
+            return "strong", "same_ip"
+        elif '.'.join(t_ip.split('.')[:3]) == '.'.join(s_ip.split('.')[:3]):
+            return "medium", "same_subnet"
+        return "weak", "different_network"
 
-  
-    if not wifi_result.get("success"):
-        
-        from datetime import datetime
+    signal_strength, ip_relation = simulate_signal_strength(teacher_ip, student_ip)
+
+    # --- Block if weak connection (different network) ---
+    allow = ip_relation in ["same_ip", "same_subnet"]
+    if not allow:
         log = Attendancelog(
             student_id=student_id,
             course_id=course_id,
@@ -192,12 +197,23 @@ def pre_attend_check(course_id):
             teacher_id=course.teacher_id,
             status="attempted",
             verification_timestamp=datetime.utcnow(),
-            connection_strength="weak"
+            connection_strength=signal_strength
         )
         db.session.add(log)
         db.session.commit()
 
-    return jsonify(wifi_result), 200 if wifi_result.get("success") else 403
+    return jsonify({
+        "success": allow,
+        "student_ip": student_ip,
+        "teacher_ip": teacher_ip,
+        "signal_strength": signal_strength,
+        "ip_relation": ip_relation,
+        "message": (
+            "Connection verified. You may take attendance." if allow else
+            "You are not on the same WiFi as your teacher. Attendance is blocked."
+        )
+    }), 200 if allow else 403
+
 
 # --- STUDENT TAKE HIS ATTENDANCE ---
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
