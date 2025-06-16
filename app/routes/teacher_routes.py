@@ -10,6 +10,12 @@ wifi_verification_system = WifiVerificationSystem()
 def is_teacher_of_course(teacher_id, course_id):
     return Course.query.filter_by(course_id=course_id, teacher_id=teacher_id).first() is not None
 
+def get_real_ip():
+    """Extract real IP address from X-Forwarded-For if behind proxy."""
+    if 'X-Forwarded-For' in request.headers:
+        return request.headers['X-Forwarded-For'].split(',')[0].strip()
+    return request.remote_addr
+
 # ---- LOGIN ----
 @teacher_bp.route('/teacher/login', methods=['POST'])
 def teacher_login():
@@ -79,22 +85,21 @@ def course_summary(course_id):
         "registered_students_count": registered_students_count
     })
 # --- SESSION START ---
+# --- SESSION START ---
 @teacher_bp.route('/teacher/course/<int:course_id>/sessions/start', methods=['POST'])
 @jwt_required()
 def start_session(course_id):
     teacher_id = get_jwt_identity()
     if not is_teacher_of_course(teacher_id, course_id):
         return jsonify({"message": "Not your course"}), 403
-    # Check if an open session exists
+
     if AttendanceSession.query.filter_by(course_id=course_id, is_active=True).first():
         return jsonify({"message": "A session for this course is already open"}), 400
 
     from datetime import datetime
     sn = 1 + AttendanceSession.query.filter_by(course_id=course_id).count()
-    # REMOVE THE REQUIREMENT FOR WIFI_SSID
-    # wifi_ssid = (request.json or {}).get('wifi_ssid') or request.form.get('wifi_ssid')
-    # if not wifi_ssid:
-    #     return jsonify({"message": "WiFi SSID required"}), 400
+
+    ip_address = get_real_ip()
 
     session = AttendanceSession(
         session_number=sn,
@@ -102,8 +107,8 @@ def start_session(course_id):
         course_id=course_id,
         start_time=datetime.utcnow(),
         is_active=True,
-        ip_address=request.remote_addr,
-        teacher_ip=request.remote_addr, 
+        ip_address=ip_address,
+        teacher_ip=ip_address,
         status="active"
     )
     db.session.add(session)

@@ -155,6 +155,13 @@ def student_register_face():
     }), 200 if saved_encodings >= 3 else 400
 
 # --- PRE-ATTEND WIFI CHECK ---
+
+def get_real_ip():
+    """Extract real IP address from X-Forwarded-For if behind proxy."""
+    if 'X-Forwarded-For' in request.headers:
+        return request.headers['X-Forwarded-For'].split(',')[0].strip()
+    return request.remote_addr
+
 @student_bp.route('/student/pre_attend_check/<int:course_id>', methods=['POST'])
 @jwt_required()
 def pre_attend_check(course_id):
@@ -174,8 +181,8 @@ def pre_attend_check(course_id):
     if not session or not session.is_active:
         return jsonify({"success": False, "message": "No active attendance session found for this course."}), 404
 
-    teacher_ip = session.teacher_ip
-    student_ip = request.form.get('student_ip') or request.remote_addr
+    teacher_ip = session.teacher_ip or get_real_ip()
+    student_ip = request.form.get('student_ip') or get_real_ip()
 
     # --- Simulated Signal Strength Based on IP ---
     def simulate_signal_strength(t_ip, s_ip):
@@ -213,7 +220,6 @@ def pre_attend_check(course_id):
             "You are not on the same WiFi as your teacher. Attendance is blocked."
         )
     }), 200 if allow else 403
-
 
 # --- STUDENT TAKE HIS ATTENDANCE ---
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
