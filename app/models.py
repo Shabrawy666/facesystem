@@ -206,7 +206,6 @@ class Attendancelog(db.Model):
         # Set default values
         defaults = {
             'date': now.date(),
-            'time': now.time(),
             'status': 'present',  # Default to present for new records
             'verification_details': {},
             'verification_timestamp': now,
@@ -238,7 +237,6 @@ class Attendancelog(db.Model):
             'session_id': session_id,
             'teacher_id': teacher_id,
             'date': now.date(),
-            'time': now.time(),
             'status': 'present',
             'verification_timestamp': now,
             'last_attempt': now,
