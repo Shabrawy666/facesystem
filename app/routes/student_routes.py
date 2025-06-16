@@ -216,6 +216,8 @@ def pre_attend_check(course_id):
 @student_bp.route('/student/attend/<int:course_id>', methods=['POST'])
 @jwt_required()
 def student_attend_latest_session(course_id):
+    from datetime import datetime
+
     student_id = get_jwt_identity()
     claims = get_jwt()
     if claims.get('role') != 'student':
@@ -238,11 +240,24 @@ def student_attend_latest_session(course_id):
     if not session.is_active:
         return jsonify({"success": False, "message": "Session is closed."}), 403
 
-    # 3. Save image temporarily
+    # 3. Simulate connection strength (same as pre_attend_check)
+    teacher_ip = session.teacher_ip or request.remote_addr
+    student_ip = request.form.get('student_ip') or request.remote_addr
+
+    def simulate_connection_strength(t_ip, s_ip):
+        if s_ip == t_ip:
+            return "strong", "same_ip"
+        elif '.'.join(t_ip.split('.')[:3]) == '.'.join(s_ip.split('.')[:3]):
+            return "medium", "same_subnet"
+        return "weak", "different_network"
+
+    connection_strength, ip_relation = simulate_connection_strength(teacher_ip, student_ip)
+
+    # 4. Save image temporarily
     temp_path = f"/tmp/attend_{student_id}_{session.id}.jpg"
     file.save(temp_path)
 
-    # 4. Extract encoding from uploaded image and compare to DB encodings
+    # 5. Extract encoding and verify
     frs = FaceRecognitionSystem()
     try:
         img = cv2.imread(temp_path)
@@ -251,7 +266,6 @@ def student_attend_latest_session(course_id):
                 os.remove(temp_path)
             return jsonify({"success": False, "message": "Could not read uploaded image. Please try a different photo."}), 400
 
-        # --- Liveness Detection ---
         liveness_result = liveness_detector.analyze(img)
         liveness_score = liveness_result.get("score", 0)
         liveness_message = liveness_result.get("message", "")
@@ -293,10 +307,10 @@ def student_attend_latest_session(course_id):
             "encodings_compared": int(len(stored_encodings)),
             "liveness_score": liveness_score,
             "liveness_message": liveness_message,
-            "message": ("Attendance marked" if verified else "Face not recognized"),
+            "connection_strength": connection_strength,
+            "message": ("Attendance marked" if verified else "Face not recognized")
         }
 
-        from datetime import datetime
         now = datetime.utcnow()
         log = Attendancelog.query.filter_by(
             student_id=student_id,
@@ -317,7 +331,6 @@ def student_attend_latest_session(course_id):
                         "last_attempt": log.last_attempt.isoformat() if log.last_attempt else None,
                         "verification_timestamp": log.verification_timestamp.isoformat() if log.verification_timestamp else None,
                     }), 400
-                # Was attempted and now succeeded:
                 log.status = "present"
                 log.verification_score = float(best_similarity)
                 log.verification_timestamp = now
@@ -341,12 +354,6 @@ def student_attend_latest_session(course_id):
             db.session.commit()
             return jsonify(result)
         else:
-            # === NO database logging for failed face attempts! ===
-            # You may optionally log this for monitoring (print, log, metric, etc.)
-            # Example for the teacher or admin logs:
-            # app.logger.info(
-            #     f"Failed attendance attempt: student_id={student_id}, course_id={course_id}, session_id={session.id}, score={best_similarity}, liveness={liveness_score}"
-            # )
             return jsonify(result), 403
 
     except Exception as e:
